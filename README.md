@@ -1,29 +1,67 @@
 # MediChain - Secure Electronic Health Records
 
-A blockchain-based healthcare data management system with **Zero Knowledge proofs** and **Attribute-Based Access Control (ABAC)**.
+A blockchain-based healthcare data management system with **Zero Knowledge Proofs (ZKP)** and **Attribute-Based Access Control (ABAC)**.
 
-This project enables patients to securely upload medical data, manage doctor access, and view historical data. Doctors can manage patient lists, access records, generate consultancy reports, and revoke patient access. Diagnostic centers can create EHR reports with IPFS integration.
+Patients have complete control over their medical data - deciding who can access it, revoking access at any time, and maintaining an immutable audit trail of all access attempts.
 
-## Technologies Used
+## Features
 
-- **Blockchain:** Ethereum (Solidity 0.8.19)
-- **Development Framework:** Foundry (Forge, Anvil, Cast)
-- **Local Blockchain:** Anvil (replaces Ganache)
-- **Wallet:** MetaMask
-- **Decentralized Storage:** IPFS
-- **Frontend:** React 18, Tailwind CSS, Web3.js
-- **Security:** Zero Knowledge Proofs, ABAC
+### Patient Portal
+- Register and manage personal health profile
+- Upload and view medical records
+- Grant/revoke access to doctors with fine-grained permissions
+- View complete medical history with audit trail
+- Access control panel for managing permissions
+
+### Doctor Portal
+- Register with credentials and specialization
+- View patient list (patients who granted access)
+- Access patient records with permission verification
+- Generate consultation reports and prescriptions
+- Time-limited access with automatic expiration
+
+### Diagnostic Center Portal
+- Register diagnostic facilities
+- Create and upload laboratory reports
+- IPFS-based file storage for medical documents
+- Associate reports with patient records
+
+### Emergency Access
+- Time-limited (24-hour) emergency access for critical situations
+- Comprehensive audit logging of emergency access
+
+## Technology Stack
+
+| Category | Technologies |
+|----------|-------------|
+| **Blockchain** | Ethereum (Solidity 0.8.19) |
+| **Framework** | Foundry (Forge, Anvil, Cast) |
+| **Local Blockchain** | Anvil (Chain ID: 31337) |
+| **Wallet** | MetaMask |
+| **Storage** | IPFS via Web3.Storage |
+| **Frontend** | React 18, Tailwind CSS, Web3.js |
+| **Security** | Zero Knowledge Proofs, ABAC |
+
+## Smart Contracts
+
+| Contract | Description |
+|----------|-------------|
+| `PatientRegistration.sol` | Patient registration, profile management, permission grants |
+| `DoctorRegistration.sol` | Doctor registration, credentials, patient list management |
+| `DiagnosticRegistration.sol` | Diagnostic center registration and authentication |
+| `SecureAccessControl.sol` | ZK proofs + ABAC engine, permission expiration, audit logging |
+| `MedicalRecords.sol` | Medical record storage, IPFS CID management, record types |
 
 ## Security Features
 
-- **Zero Knowledge Proofs**: Verify attributes without revealing sensitive data
-- **ABAC Access Control**: Fine-grained permission management based on user attributes
-- **Blockchain Security**: Immutable health records on Ethereum
-- **Patient-Controlled**: Patients manage who can access their data
+- **Zero Knowledge Proofs**: Verify age, credentials, and medical clearance without revealing actual data
+- **Attribute-Based Access Control**: Fine-grained permissions based on roles, attributes, and sensitivity levels
+- **Blockchain Immutability**: Tamper-proof health records on Ethereum
+- **Patient-Controlled Access**: Complete control over who can view records
+- **Time-Bound Permissions**: Automatic expiration of access grants
+- **Audit Trail**: Every access attempt is logged for transparency
 
-
-
-## Screenshots:
+## Screenshots
 
 ### HomePage:
 
@@ -164,14 +202,37 @@ make frontend  # Start React app
 
 ```
 ehr/
-├── contracts/           # Solidity smart contracts
-├── scripts/             # Deployment scripts (Node.js)
+├── contracts/                  # Solidity smart contracts
+│   ├── PatientRegistration.sol
+│   ├── DoctorRegistration.sol
+│   ├── DiagnosticRegistration.sol
+│   ├── SecureAccessControl.sol
+│   └── MedicalRecords.sol
+├── scripts/                    # Deployment scripts
+│   ├── deploy-contracts.js
+│   └── generate-abis.js
 ├── src/
-│   ├── components/      # React components
-│   ├── context/         # SecurityContext (ZK + ABAC)
-│   ├── utils/           # zkProofs.js, abacEngine.js
-│   └── config/          # web3Config.js
-├── foundry.toml         # Foundry configuration
+│   ├── components/             # React components (24 components)
+│   ├── context/
+│   │   └── SecurityContext.js  # ZK + ABAC React context
+│   ├── utils/
+│   │   ├── zkProofs.js         # Zero Knowledge Proof implementations
+│   │   ├── abacEngine.js       # ABAC policy engine
+│   │   └── ipfsClient.js       # IPFS/Web3.Storage integration
+│   ├── config/
+│   │   └── web3Config.js       # Web3 & Anvil configuration
+│   └── build/contracts/        # Compiled contract ABIs
+├── out/                        # Foundry build artifacts
+├── foundry.toml                # Foundry configuration
+├── deployment.json             # Deployed contract addresses
+├── Makefile                    # Development commands
 └── package.json
 ```
 
+## Data Storage
+
+| Location | Data |
+|----------|------|
+| **On-Chain** | User registrations, permissions, ZK commitments, IPFS CIDs, audit logs |
+| **IPFS** | Medical documents, lab reports, diagnostic images |
+| **Browser** | User session, proofs cache, access logs |
