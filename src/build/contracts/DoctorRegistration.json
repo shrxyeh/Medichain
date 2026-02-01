@@ -1,0 +1,342 @@
+{
+  "contractName": "DoctorRegistration",
+  "abi": [
+    {
+      "type": "function",
+      "name": "doctorPermissions",
+      "inputs": [
+        {
+          "name": "",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "",
+          "type": "string",
+          "internalType": "string"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool",
+          "internalType": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "constant": true,
+      "signature": "0x44334733"
+    },
+    {
+      "type": "function",
+      "name": "getDoctorDetails",
+      "inputs": [
+        {
+          "name": "_hhNumber",
+          "type": "string",
+          "internalType": "string"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "_walletAddress",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "_doctorName",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "_hospitalName",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "_dateOfBirth",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "_gender",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "_email",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "_specialization",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "_department",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "_designation",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "_workExperience",
+          "type": "string",
+          "internalType": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "constant": true,
+      "signature": "0x3e769767"
+    },
+    {
+      "type": "function",
+      "name": "getPatientList",
+      "inputs": [
+        {
+          "name": "_doctorNumber",
+          "type": "string",
+          "internalType": "string"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "tuple[]",
+          "internalType": "struct DoctorRegistration.PatientList[]",
+          "components": [
+            {
+              "name": "patient_number",
+              "type": "string",
+              "internalType": "string"
+            },
+            {
+              "name": "patient_name",
+              "type": "string",
+              "internalType": "string"
+            }
+          ]
+        }
+      ],
+      "stateMutability": "view",
+      "constant": true,
+      "signature": "0x91c12f76"
+    },
+    {
+      "type": "function",
+      "name": "grantPermission",
+      "inputs": [
+        {
+          "name": "_patientNumber",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "_doctorNumber",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "_patientName",
+          "type": "string",
+          "internalType": "string"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "signature": "0x5df67040"
+    },
+    {
+      "type": "function",
+      "name": "isPermissionGranted",
+      "inputs": [
+        {
+          "name": "_patientNumber",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "_doctorNumber",
+          "type": "string",
+          "internalType": "string"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool",
+          "internalType": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "constant": true,
+      "signature": "0xd120c10c"
+    },
+    {
+      "type": "function",
+      "name": "isRegisteredDoctor",
+      "inputs": [
+        {
+          "name": "_hhNumber",
+          "type": "string",
+          "internalType": "string"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool",
+          "internalType": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "constant": true,
+      "signature": "0xa46bef15"
+    },
+    {
+      "type": "function",
+      "name": "registerDoctor",
+      "inputs": [
+        {
+          "name": "_doctorName",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "_hospitalName",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "_dateOfBirth",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "_gender",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "_email",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "_hhNumber",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "_specialization",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "_department",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "_designation",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "_workExperience",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "_password",
+          "type": "string",
+          "internalType": "string"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "signature": "0x1cd1bd58"
+    },
+    {
+      "type": "function",
+      "name": "revokePermission",
+      "inputs": [
+        {
+          "name": "_patientNumber",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "_doctorNumber",
+          "type": "string",
+          "internalType": "string"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "signature": "0xac5f9fd0"
+    },
+    {
+      "type": "function",
+      "name": "validatePassword",
+      "inputs": [
+        {
+          "name": "_hhNumber",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "_password",
+          "type": "string",
+          "internalType": "string"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool",
+          "internalType": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "constant": true,
+      "signature": "0x7babdb26"
+    },
+    {
+      "type": "event",
+      "name": "DoctorRegistered",
+      "inputs": [
+        {
+          "name": "hhNumber",
+          "type": "string",
+          "indexed": false,
+          "internalType": "string"
+        },
+        {
+          "name": "doctorName",
+          "type": "string",
+          "indexed": false,
+          "internalType": "string"
+        },
+        {
+          "name": "walletAddress",
+          "type": "address",
+          "indexed": false,
+          "internalType": "address"
+        }
+      ],
+      "anonymous": false,
+      "signature": "0x8d3f9c8a09dcd94bc9c847110caac40824996b777a45809b38b82b9aa3f71ec8"
+    }
+  ],
+  "networks": {
+    "31337": {
+      "address": "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
+      "transactionHash": ""
+    }
+  }
+}

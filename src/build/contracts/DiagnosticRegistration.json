@@ -1,0 +1,164 @@
+{
+  "contractName": "DiagnosticRegistration",
+  "abi": [
+    {
+      "type": "function",
+      "name": "getDiagnosticDetails",
+      "inputs": [
+        {
+          "name": "_hhNumber",
+          "type": "string",
+          "internalType": "string"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "_walletAddress",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "_diagnosticName",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "_hospitalName",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "_diagnosticLocation",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "_email",
+          "type": "string",
+          "internalType": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "constant": true,
+      "signature": "0x25b4c9c7"
+    },
+    {
+      "type": "function",
+      "name": "isRegisteredDiagnostic",
+      "inputs": [
+        {
+          "name": "_hhNumber",
+          "type": "string",
+          "internalType": "string"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool",
+          "internalType": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "constant": true,
+      "signature": "0xcf9ff022"
+    },
+    {
+      "type": "function",
+      "name": "registerDiagnostic",
+      "inputs": [
+        {
+          "name": "_diagnosticName",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "_hospitalName",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "_diagnosticLocation",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "_email",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "_hhNumber",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "_password",
+          "type": "string",
+          "internalType": "string"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "signature": "0x1462b5a8"
+    },
+    {
+      "type": "function",
+      "name": "validatePassword",
+      "inputs": [
+        {
+          "name": "_hhNumber",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "_password",
+          "type": "string",
+          "internalType": "string"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool",
+          "internalType": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "constant": true,
+      "signature": "0x7babdb26"
+    },
+    {
+      "type": "event",
+      "name": "DiagnosticRegistered",
+      "inputs": [
+        {
+          "name": "hhNumber",
+          "type": "string",
+          "indexed": false,
+          "internalType": "string"
+        },
+        {
+          "name": "diagnosticName",
+          "type": "string",
+          "indexed": false,
+          "internalType": "string"
+        },
+        {
+          "name": "walletAddress",
+          "type": "address",
+          "indexed": false,
+          "internalType": "address"
+        }
+      ],
+      "anonymous": false,
+      "signature": "0x018b729007b12778ed503e400556113a91191a1cd9f17a22387db8e25fa67d55"
+    }
+  ],
+  "networks": {
+    "31337": {
+      "address": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
+      "transactionHash": ""
+    }
+  }
+}

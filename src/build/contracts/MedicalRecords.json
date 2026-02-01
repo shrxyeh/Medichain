@@ -1,0 +1,564 @@
+{
+  "contractName": "MedicalRecords",
+  "abi": [
+    {
+      "type": "constructor",
+      "inputs": [
+        {
+          "name": "_patientRegistrationContract",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "signature": "constructor"
+    },
+    {
+      "type": "function",
+      "name": "createLabReport",
+      "inputs": [
+        {
+          "name": "_patientHhNumber",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "_doctorName",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "_patientName",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "_age",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "_gender",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "_bloodGroup",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "_patientWallet",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "_ipfsCID",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "_metadata",
+          "type": "string",
+          "internalType": "string"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "signature": "0x2f5d4924"
+    },
+    {
+      "type": "function",
+      "name": "deactivateRecord",
+      "inputs": [
+        {
+          "name": "_patientHhNumber",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "_recordId",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "signature": "0x00b28993"
+    },
+    {
+      "type": "function",
+      "name": "getLabReport",
+      "inputs": [
+        {
+          "name": "_recordId",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "doctorName",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "patientName",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "age",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "gender",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "bloodGroup",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "patientWallet",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "diagnosticWallet",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "ipfsCID",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "createdAt",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "constant": true,
+      "signature": "0x2c0ef760"
+    },
+    {
+      "type": "function",
+      "name": "getPatientRecordCount",
+      "inputs": [
+        {
+          "name": "_patientHhNumber",
+          "type": "string",
+          "internalType": "string"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "constant": true,
+      "signature": "0x3502f323"
+    },
+    {
+      "type": "function",
+      "name": "getPatientRecordIds",
+      "inputs": [
+        {
+          "name": "_patientHhNumber",
+          "type": "string",
+          "internalType": "string"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256[]",
+          "internalType": "uint256[]"
+        }
+      ],
+      "stateMutability": "view",
+      "constant": true,
+      "signature": "0x85ae085e"
+    },
+    {
+      "type": "function",
+      "name": "getRecord",
+      "inputs": [
+        {
+          "name": "_recordId",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "recordId",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "ipfsCID",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "recordType",
+          "type": "uint8",
+          "internalType": "enum MedicalRecords.RecordType"
+        },
+        {
+          "name": "uploadedAt",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "uploadedBy",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "metadata",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "isActive",
+          "type": "bool",
+          "internalType": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "constant": true,
+      "signature": "0x03e9e609"
+    },
+    {
+      "type": "function",
+      "name": "labReports",
+      "inputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "recordId",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "doctorName",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "patientName",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "age",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "gender",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "bloodGroup",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "patientWallet",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "diagnosticWallet",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "ipfsCID",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "createdAt",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "constant": true,
+      "signature": "0x3031aea9"
+    },
+    {
+      "type": "function",
+      "name": "patientRegistrationContract",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "constant": true,
+      "signature": "0x5665fd74"
+    },
+    {
+      "type": "function",
+      "name": "recordExists",
+      "inputs": [
+        {
+          "name": "_recordId",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool",
+          "internalType": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "constant": true,
+      "signature": "0xfdffba0e"
+    },
+    {
+      "type": "function",
+      "name": "records",
+      "inputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "recordId",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "ipfsCID",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "recordType",
+          "type": "uint8",
+          "internalType": "enum MedicalRecords.RecordType"
+        },
+        {
+          "name": "uploadedAt",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "uploadedBy",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "metadata",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "isActive",
+          "type": "bool",
+          "internalType": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "constant": true,
+      "signature": "0x34461067"
+    },
+    {
+      "type": "function",
+      "name": "uploadPastRecord",
+      "inputs": [
+        {
+          "name": "_patientHhNumber",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "_ipfsCID",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "_metadata",
+          "type": "string",
+          "internalType": "string"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "signature": "0x4f1a9aa7"
+    },
+    {
+      "type": "function",
+      "name": "uploadRecord",
+      "inputs": [
+        {
+          "name": "_patientHhNumber",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "_ipfsCID",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "_recordType",
+          "type": "uint8",
+          "internalType": "enum MedicalRecords.RecordType"
+        },
+        {
+          "name": "_metadata",
+          "type": "string",
+          "internalType": "string"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "signature": "0x7900b018"
+    },
+    {
+      "type": "event",
+      "name": "LabReportCreated",
+      "inputs": [
+        {
+          "name": "recordId",
+          "type": "uint256",
+          "indexed": true,
+          "internalType": "uint256"
+        },
+        {
+          "name": "patientHhNumber",
+          "type": "string",
+          "indexed": false,
+          "internalType": "string"
+        },
+        {
+          "name": "diagnosticWallet",
+          "type": "address",
+          "indexed": false,
+          "internalType": "address"
+        },
+        {
+          "name": "ipfsCID",
+          "type": "string",
+          "indexed": false,
+          "internalType": "string"
+        }
+      ],
+      "anonymous": false,
+      "signature": "0x1f6fa01a26340c502f7d2f12dc3cb1d5ece42b816ae1a5092342ec635b48a326"
+    },
+    {
+      "type": "event",
+      "name": "RecordDeactivated",
+      "inputs": [
+        {
+          "name": "recordId",
+          "type": "uint256",
+          "indexed": true,
+          "internalType": "uint256"
+        },
+        {
+          "name": "patientHhNumber",
+          "type": "string",
+          "indexed": false,
+          "internalType": "string"
+        }
+      ],
+      "anonymous": false,
+      "signature": "0x01080ae4e1abfe6cfd92ba30b14d59984c3fea28211cbd89742746f0fa82195c"
+    },
+    {
+      "type": "event",
+      "name": "RecordUploaded",
+      "inputs": [
+        {
+          "name": "recordId",
+          "type": "uint256",
+          "indexed": true,
+          "internalType": "uint256"
+        },
+        {
+          "name": "patientHhNumber",
+          "type": "string",
+          "indexed": false,
+          "internalType": "string"
+        },
+        {
+          "name": "ipfsCID",
+          "type": "string",
+          "indexed": false,
+          "internalType": "string"
+        },
+        {
+          "name": "recordType",
+          "type": "uint8",
+          "indexed": false,
+          "internalType": "enum MedicalRecords.RecordType"
+        },
+        {
+          "name": "uploadedBy",
+          "type": "address",
+          "indexed": false,
+          "internalType": "address"
+        }
+      ],
+      "anonymous": false,
+      "signature": "0x02cc6919688228694ce0bd7a011556e1ddbb66c2ab4654b5c90f6b916da5eb67"
+    }
+  ],
+  "networks": {
+    "31337": {
+      "address": "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9",
+      "transactionHash": ""
+    }
+  }
+}

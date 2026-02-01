@@ -1,0 +1,737 @@
+{
+  "contractName": "SecureAccessControl",
+  "abi": [
+    {
+      "type": "function",
+      "name": "accessPolicies",
+      "inputs": [
+        {
+          "name": "",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "requiredRole",
+          "type": "uint8",
+          "internalType": "enum SecureAccessControl.Role"
+        },
+        {
+          "name": "minClearance",
+          "type": "uint8",
+          "internalType": "uint8"
+        },
+        {
+          "name": "maxSensitivity",
+          "type": "uint8",
+          "internalType": "enum SecureAccessControl.Sensitivity"
+        },
+        {
+          "name": "requiresPermission",
+          "type": "bool",
+          "internalType": "bool"
+        },
+        {
+          "name": "active",
+          "type": "bool",
+          "internalType": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "constant": true,
+      "signature": "0xddcdb4ea"
+    },
+    {
+      "type": "function",
+      "name": "auditLog",
+      "inputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "userId",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "resourceId",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        },
+        {
+          "name": "action",
+          "type": "uint8",
+          "internalType": "uint8"
+        },
+        {
+          "name": "allowed",
+          "type": "bool",
+          "internalType": "bool"
+        },
+        {
+          "name": "timestamp",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "constant": true,
+      "signature": "0xf22ac6f1"
+    },
+    {
+      "type": "function",
+      "name": "createCommitment",
+      "inputs": [
+        {
+          "name": "_hhNumber",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "_commitment",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "signature": "0xc98b2c02"
+    },
+    {
+      "type": "function",
+      "name": "deactivateUser",
+      "inputs": [
+        {
+          "name": "_adminId",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "_userId",
+          "type": "string",
+          "internalType": "string"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "signature": "0x3d1cbad5"
+    },
+    {
+      "type": "function",
+      "name": "emergencyAccess",
+      "inputs": [
+        {
+          "name": "_emergencyUserId",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "_patientId",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "_reason",
+          "type": "string",
+          "internalType": "string"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool",
+          "internalType": "bool"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "signature": "0xd9443cd5"
+    },
+    {
+      "type": "function",
+      "name": "evaluateAccess",
+      "inputs": [
+        {
+          "name": "_userId",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "_resourceOwnerId",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "_resourceType",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        },
+        {
+          "name": "_resourceSensitivity",
+          "type": "uint8",
+          "internalType": "enum SecureAccessControl.Sensitivity"
+        },
+        {
+          "name": "_action",
+          "type": "uint8",
+          "internalType": "uint8"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "allowed",
+          "type": "bool",
+          "internalType": "bool"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "signature": "0x6c429bc7"
+    },
+    {
+      "type": "function",
+      "name": "getAuditEntry",
+      "inputs": [
+        {
+          "name": "_index",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "userId",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "resourceId",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        },
+        {
+          "name": "action",
+          "type": "uint8",
+          "internalType": "uint8"
+        },
+        {
+          "name": "allowed",
+          "type": "bool",
+          "internalType": "bool"
+        },
+        {
+          "name": "timestamp",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "constant": true,
+      "signature": "0xa61ecc62"
+    },
+    {
+      "type": "function",
+      "name": "getAuditLogLength",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "constant": true,
+      "signature": "0x13313881"
+    },
+    {
+      "type": "function",
+      "name": "getUserAttributes",
+      "inputs": [
+        {
+          "name": "_hhNumber",
+          "type": "string",
+          "internalType": "string"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "role",
+          "type": "uint8",
+          "internalType": "enum SecureAccessControl.Role"
+        },
+        {
+          "name": "clearanceLevel",
+          "type": "uint8",
+          "internalType": "uint8"
+        },
+        {
+          "name": "isActive",
+          "type": "bool",
+          "internalType": "bool"
+        },
+        {
+          "name": "registeredAt",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "constant": true,
+      "signature": "0x70978a30"
+    },
+    {
+      "type": "function",
+      "name": "grantPermissionZK",
+      "inputs": [
+        {
+          "name": "_patientNumber",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "_doctorNumber",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "_duration",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "_proofCommitment",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "signature": "0xf97dc0f7"
+    },
+    {
+      "type": "function",
+      "name": "isPermissionValid",
+      "inputs": [
+        {
+          "name": "_patientNumber",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "_doctorNumber",
+          "type": "string",
+          "internalType": "string"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool",
+          "internalType": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "constant": true,
+      "signature": "0x8c01a686"
+    },
+    {
+      "type": "function",
+      "name": "permissions",
+      "inputs": [
+        {
+          "name": "",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "",
+          "type": "string",
+          "internalType": "string"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "granted",
+          "type": "bool",
+          "internalType": "bool"
+        },
+        {
+          "name": "grantedAt",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "expiresAt",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "proofCommitment",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "constant": true,
+      "signature": "0xa45b7374"
+    },
+    {
+      "type": "function",
+      "name": "registerUserAttributes",
+      "inputs": [
+        {
+          "name": "_hhNumber",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "_role",
+          "type": "uint8",
+          "internalType": "enum SecureAccessControl.Role"
+        },
+        {
+          "name": "_departmentHash",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        },
+        {
+          "name": "_clearanceLevel",
+          "type": "uint8",
+          "internalType": "uint8"
+        },
+        {
+          "name": "_ageCommitment",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        },
+        {
+          "name": "_credentialCommitment",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "signature": "0x5df6ddda"
+    },
+    {
+      "type": "function",
+      "name": "revokePermission",
+      "inputs": [
+        {
+          "name": "_patientNumber",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "_doctorNumber",
+          "type": "string",
+          "internalType": "string"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "signature": "0xac5f9fd0"
+    },
+    {
+      "type": "function",
+      "name": "updateClearanceLevel",
+      "inputs": [
+        {
+          "name": "_adminId",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "_userId",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "_newLevel",
+          "type": "uint8",
+          "internalType": "uint8"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "signature": "0xe6f4db0f"
+    },
+    {
+      "type": "function",
+      "name": "userAttributes",
+      "inputs": [
+        {
+          "name": "",
+          "type": "string",
+          "internalType": "string"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "role",
+          "type": "uint8",
+          "internalType": "enum SecureAccessControl.Role"
+        },
+        {
+          "name": "departmentHash",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        },
+        {
+          "name": "clearanceLevel",
+          "type": "uint8",
+          "internalType": "uint8"
+        },
+        {
+          "name": "isActive",
+          "type": "bool",
+          "internalType": "bool"
+        },
+        {
+          "name": "registeredAt",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "ageCommitment",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        },
+        {
+          "name": "credentialCommitment",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "constant": true,
+      "signature": "0xea1dc138"
+    },
+    {
+      "type": "function",
+      "name": "verifyCommitment",
+      "inputs": [
+        {
+          "name": "_commitment",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        },
+        {
+          "name": "_expectedHash",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool",
+          "internalType": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "constant": true,
+      "signature": "0x7cc26b95"
+    },
+    {
+      "type": "function",
+      "name": "zkCommitments",
+      "inputs": [
+        {
+          "name": "",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "commitment",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        },
+        {
+          "name": "timestamp",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "verified",
+          "type": "bool",
+          "internalType": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "constant": true,
+      "signature": "0xfa4e35ea"
+    },
+    {
+      "type": "event",
+      "name": "AccessAttempt",
+      "inputs": [
+        {
+          "name": "userId",
+          "type": "string",
+          "indexed": true,
+          "internalType": "string"
+        },
+        {
+          "name": "resourceId",
+          "type": "bytes32",
+          "indexed": false,
+          "internalType": "bytes32"
+        },
+        {
+          "name": "allowed",
+          "type": "bool",
+          "indexed": false,
+          "internalType": "bool"
+        }
+      ],
+      "anonymous": false,
+      "signature": "0x3de2f2e680d6e6a945d1b4bd81d56fe9f8d2b3ece1b0a7e975e26ae71a198f5c"
+    },
+    {
+      "type": "event",
+      "name": "AttributeUpdated",
+      "inputs": [
+        {
+          "name": "hhNumber",
+          "type": "string",
+          "indexed": true,
+          "internalType": "string"
+        },
+        {
+          "name": "attributeName",
+          "type": "string",
+          "indexed": false,
+          "internalType": "string"
+        }
+      ],
+      "anonymous": false,
+      "signature": "0xd505d048843937a209c73010edefec102c511dd18fd3d8c0a103ac85b7e9a371"
+    },
+    {
+      "type": "event",
+      "name": "CommitmentCreated",
+      "inputs": [
+        {
+          "name": "commitmentHash",
+          "type": "bytes32",
+          "indexed": true,
+          "internalType": "bytes32"
+        },
+        {
+          "name": "hhNumber",
+          "type": "string",
+          "indexed": true,
+          "internalType": "string"
+        }
+      ],
+      "anonymous": false,
+      "signature": "0xabbf116fe53136cf0da49a74e331ec9cfac70eb049a63934d352d2a1eec7da2b"
+    },
+    {
+      "type": "event",
+      "name": "EmergencyAccessUsed",
+      "inputs": [
+        {
+          "name": "userId",
+          "type": "string",
+          "indexed": true,
+          "internalType": "string"
+        },
+        {
+          "name": "patientId",
+          "type": "string",
+          "indexed": true,
+          "internalType": "string"
+        }
+      ],
+      "anonymous": false,
+      "signature": "0x62c08da5ca3a8af1666f66f35a0ce0d5345dbd59ac399b8f0f3fb330b65e1da9"
+    },
+    {
+      "type": "event",
+      "name": "PermissionGranted",
+      "inputs": [
+        {
+          "name": "patient",
+          "type": "string",
+          "indexed": true,
+          "internalType": "string"
+        },
+        {
+          "name": "doctor",
+          "type": "string",
+          "indexed": true,
+          "internalType": "string"
+        },
+        {
+          "name": "expiresAt",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        }
+      ],
+      "anonymous": false,
+      "signature": "0xaa8d5af294a92738e28cd68873e54317269c9fe99d3cdfbbe4b59dfcc0cb0584"
+    },
+    {
+      "type": "event",
+      "name": "PermissionRevoked",
+      "inputs": [
+        {
+          "name": "patient",
+          "type": "string",
+          "indexed": true,
+          "internalType": "string"
+        },
+        {
+          "name": "doctor",
+          "type": "string",
+          "indexed": true,
+          "internalType": "string"
+        }
+      ],
+      "anonymous": false,
+      "signature": "0x213e0e506c4dc293f81607cd7c386e8054c30488dec51469ff3fddcc5f3ad70c"
+    },
+    {
+      "type": "event",
+      "name": "UserRegistered",
+      "inputs": [
+        {
+          "name": "hhNumber",
+          "type": "string",
+          "indexed": true,
+          "internalType": "string"
+        },
+        {
+          "name": "role",
+          "type": "uint8",
+          "indexed": false,
+          "internalType": "enum SecureAccessControl.Role"
+        }
+      ],
+      "anonymous": false,
+      "signature": "0xb4b448646400af6d4d91e8e68343f746451da2aeaecda165abef637327b75fba"
+    }
+  ],
+  "networks": {
+    "31337": {
+      "address": "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
+      "transactionHash": ""
+    }
+  }
+}
