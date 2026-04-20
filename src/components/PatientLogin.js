@@ -2,119 +2,154 @@ import React, { useState } from "react";
 import Web3 from "web3";
 import PatientRegistration from "../build/contracts/PatientRegistration.json";
 import { useNavigate } from "react-router-dom";
-import "../CSS/DoctorLoginPage.css";
 import NavBar from "./NavBar";
+import { hashPassword } from "../utils/hashPassword";
 
 const PatientLogin = () => {
   const navigate = useNavigate();
-  const [hhNumberError, sethhNumberError] = useState("");
-  const [hhNumber, sethhNumber] = useState("");
+  const [hhNumber, setHhNumber] = useState("");
+  const [hhNumberError, setHhNumberError] = useState("");
   const [password, setPassword] = useState("");
-  const [isRegistered, setIsRegistered] = useState(false);
-  const [doctorDetails, setPatientDetails] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handlehhNumberChange = (e) => {
-    const inputhhNumber = e.target.value;
-    const phoneRegex = /^\d{6}$/;
-    if (phoneRegex.test(inputhhNumber)) {
-      sethhNumber(inputhhNumber);
-      sethhNumberError("");
+  const handleHhNumberChange = (e) => {
+    const value = e.target.value;
+    setHhNumber(value);
+    if (value && !/^\d{6}$/.test(value)) {
+      setHhNumberError("Must be exactly 6 digits");
     } else {
-      sethhNumber(inputhhNumber);
-      sethhNumberError("Please enter a 6-digit HH Number.");
+      setHhNumberError("");
     }
   };
 
-  const handleCheckRegistration = async () => {
+  const handleLogin = async () => {
+    if (!hhNumber || !password) {
+      setError("Please fill in all fields.");
+      return;
+    }
+    if (hhNumberError) return;
+
+    setError("");
+    setLoading(true);
     try {
       const web3 = new Web3(window.ethereum);
       const networkId = await web3.eth.net.getId();
-      const deployedNetwork = PatientRegistration.networks[networkId];
+      const deployedNetwork =
+        PatientRegistration.networks[networkId] ||
+        PatientRegistration.networks["31337"];
       const contract = new web3.eth.Contract(
         PatientRegistration.abi,
         deployedNetwork && deployedNetwork.address
       );
 
-      const isRegisteredResult = await contract.methods
-        .isRegisteredPatient(hhNumber)
-        .call();
-      setIsRegistered(isRegisteredResult);
-
-      if (isRegisteredResult) {
-        const isValidPassword = await contract.methods
-          .validatePassword(hhNumber, password)
-          .call();
-
-        if (isValidPassword) {
-          const doctor = await contract.methods
-            .getPatientDetails(hhNumber)
-            .call();
-          setPatientDetails(doctor);
-          navigate("/patient/" + hhNumber);
-        } else {
-          alert("Incorrect password");
-        }
-      } else {
-        alert("Patient not registered");
+      const isRegistered = await contract.methods.isRegisteredPatient(hhNumber).call();
+      if (!isRegistered) {
+        setError("No patient account found with this HH Number.");
+        return;
       }
-    } catch (error) {
-      console.error("Error checking registration:", error);
-      alert("An error occurred while checking registration.");
+
+      const isValidPassword = await contract.methods.validatePassword(hhNumber, hashPassword(password)).call();
+      if (!isValidPassword) {
+        setError("Incorrect password. Please try again.");
+        return;
+      }
+
+      navigate("/patient/" + hhNumber);
+    } catch (err) {
+      setError("Unable to connect. Make sure MetaMask is installed and connected.");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const cancelOperation = () => {
-    navigate("/");
-  };
-
   return (
-    <div>
+    <div className="min-h-screen bg-gradient-to-br from-dark-950 via-dark-900 to-dark-800">
       <NavBar />
-      <div className="bg-gradient-to-b from-black to-gray-800 min-h-screen flex flex-col justify-center items-center p-4 font-mono text-white">
-        <div className="w-full max-w-4xl bg-gray-900 p-20 rounded-lg shadow-lg">
-          <h2 className="text-3xl sm:text-4xl font-bold mb-6">Patient Login</h2>
-          <div className="mb-4">
-            <label className="block font-bold text-white" htmlFor="hhNumber">
-              HH Number
-            </label>
-            <input
-              id="hhNumber"
-              name="hhNumber"
-              type="text"
-              required
-              className={`mt-2 p-2 w-full text-white bg-gray-700 border border-gray-600 rounded-md hover-bg-gray-800 transition duration-200 ${hhNumberError && "border-red-500"}`}
-              placeholder="HH Number"
-              value={hhNumber}
-              onChange={handlehhNumberChange}
-            />
-            {hhNumberError && (
-              <p className="text-red-500 text-sm mt-1">{hhNumberError}</p>
-            )}
+
+      <div className="min-h-screen flex items-center justify-center px-4 pt-16">
+        <div className="w-full max-w-md animate-fade-in">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center mx-auto mb-4">
+              <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
+                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+            </div>
+            <h1 className="text-2xl font-bold text-white mb-1">Patient Sign In</h1>
+            <p className="text-sm text-gray-400">Access your health records securely</p>
           </div>
 
-          <div className="flex flex-col w-full mb-4">
-            <label className="mb-2 font-bold">Password</label>
-            <input
-              type="password"
-              placeholder="Enter your Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="p-2 w-full text-white bg-gray-700 border border-gray-600 rounded-md hover:bg-gray-800 transition duration-200"
-              required
-            />
-          </div>
-          <div className="space-x-4 text-center mt-6">
-          <button
-            onClick={handleCheckRegistration}
-            className="px-6 py-3 bg-teal-500 text-white font-bold text-lg rounded-lg cursor-pointer transition-transform transition-colors duration-300 ease-in hover:bg-teal-600 active:bg-teal-700"
-          >
-            Login
-            </button>
-            <button
-              onClick={cancelOperation}
-              className="px-6 py-3 bg-teal-500 text-white font-bold text-lg rounded-lg cursor-pointer transition-transform transition-colors duration-300 ease-in hover:bg-teal-600 active:bg-teal-700"
+          {/* Card */}
+          <div className="glass-card rounded-2xl p-8">
+            {error && (
+              <div className="mb-5 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+                {error}
+              </div>
+            )}
+
+            <div className="space-y-5">
+              <div className="form-group">
+                <label className="form-label">HH Number</label>
+                <input
+                  type="text"
+                  className={`glass-input mt-1 ${hhNumberError ? "border-red-500/60" : ""}`}
+                  placeholder="6-digit identifier"
+                  value={hhNumber}
+                  onChange={handleHhNumberChange}
+                  maxLength={6}
+                />
+                {hhNumberError && (
+                  <p className="text-red-400 text-xs mt-1">{hhNumberError}</p>
+                )}
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Password</label>
+                <input
+                  type="password"
+                  className="glass-input mt-1"
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+                />
+              </div>
+
+              <button
+                onClick={handleLogin}
+                disabled={loading}
+                className="btn-primary w-full flex items-center justify-center gap-2 mt-2"
               >
-              Close
+                {loading ? (
+                  <>
+                    <span className="spinner" />
+                    Verifying...
+                  </>
+                ) : (
+                  "Sign In"
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className="mt-6 text-center space-y-3">
+            <p className="text-sm text-gray-500">
+              Don't have an account?{" "}
+              <button
+                onClick={() => navigate("/patient_registration")}
+                className="text-primary-400 hover:text-primary-300 font-medium transition-colors"
+              >
+                Register as Patient
+              </button>
+            </p>
+            <button
+              onClick={() => navigate("/login")}
+              className="text-xs text-gray-600 hover:text-gray-400 transition-colors"
+            >
+              ← Back to role selection
             </button>
           </div>
         </div>

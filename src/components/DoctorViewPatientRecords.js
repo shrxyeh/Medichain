@@ -4,6 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import NavBar_Logout from "./NavBar_Logout";
 import MedicalRecords from "../build/contracts/MedicalRecords.json";
 import PatientRegistration from "../build/contracts/PatientRegistration.json";
+import DoctorRegistration from "../build/contracts/DoctorRegistration.json";
 import { getIPFSUrl } from "../utils/ipfsClient";
 
 const RECORD_TYPE_LABELS = {
@@ -23,6 +24,20 @@ const DoctorViewPatientRecords = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [hasPermission, setHasPermission] = useState(false);
+  const [web3, setWeb3] = useState(null);
+  const [patientContract, setPatientContract] = useState(null);
+  const [medicalContract, setMedicalContract] = useState(null);
+
+  // Consultation notes
+  const notesKey = `doctorNotes_${hhNumber}_${patientHhNumber}`;
+  const [notes, setNotes] = useState(() => localStorage.getItem(notesKey) || "");
+  const [notesSaved, setNotesSaved] = useState(false);
+
+  const saveNotes = () => {
+    localStorage.setItem(notesKey, notes);
+    setNotesSaved(true);
+    setTimeout(() => setNotesSaved(false), 2000);
+  };
 
   useEffect(() => {
     const init = async () => {
@@ -50,8 +65,14 @@ const DoctorViewPatientRecords = () => {
           );
           setPatientContract(patientContractInstance);
 
-          // Check permission
-          const permission = await patientContractInstance.methods
+          // Check permission via DoctorRegistration contract
+          const doctorDeployedNetwork = DoctorRegistration.networks[networkIdStr] ||
+            DoctorRegistration.networks["31337"];
+          const doctorContractInstance = new web3Instance.eth.Contract(
+            DoctorRegistration.abi,
+            doctorDeployedNetwork.address
+          );
+          const permission = await doctorContractInstance.methods
             .isPermissionGranted(patientHhNumber, hhNumber)
             .call();
 
@@ -87,7 +108,7 @@ const DoctorViewPatientRecords = () => {
             setError("MedicalRecords contract not deployed.");
           }
         } catch (err) {
-          console.error("Init failed:", err);
+
           setError("Failed to load records: " + err.message);
         }
       } else {
@@ -140,14 +161,26 @@ const DoctorViewPatientRecords = () => {
 
       setRecords(activeRecords);
     } catch (err) {
-      console.error("Failed to fetch records:", err);
+
       throw err;
     }
   };
 
   const openRecord = (record) => {
     const url = getIPFSUrl(record.ipfsCID);
-    window.open(url, '_blank');
+    if (!url) return;
+
+    if (url.startsWith('data:')) {
+      const [header, base64] = url.split(',');
+      const mimeType = header.split(':')[1].split(';')[0];
+      const bytes = atob(base64);
+      const arr = new Uint8Array(bytes.length);
+      for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
+      const blob = new Blob([arr], { type: mimeType });
+      window.open(URL.createObjectURL(blob), '_blank');
+    } else {
+      window.open(url, '_blank');
+    }
   };
 
   const formatDate = (date) => {
@@ -168,117 +201,96 @@ const DoctorViewPatientRecords = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-black to-gray-800">
+    <div className="min-h-screen bg-gradient-to-br from-dark-950 via-dark-900 to-dark-800">
       <NavBar_Logout />
 
       <div className="pt-24 pb-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <h2 className="text-3xl sm:text-4xl font-bold text-teal-400">
-              Record Viewer
-            </h2>
+        <div className="max-w-3xl mx-auto">
+          <div className="mb-8">
+            <h2 className="text-3xl font-bold text-white">Patient Records</h2>
             {patientDetails && (
-              <div className="mt-4 bg-gray-900 rounded-xl p-4 border border-gray-700 inline-block">
-                <p className="text-gray-400">
-                  Patient: <span className="text-cyan-400 font-semibold">{patientDetails.name}</span>
-                </p>
-                <p className="text-gray-400 text-sm">
-                  HH Number: <span className="text-gray-300">{patientHhNumber}</span>
-                </p>
-              </div>
+              <p className="text-gray-400 mt-1 text-sm">
+                {patientDetails.name} · HH: {patientHhNumber}
+              </p>
             )}
           </div>
 
-          {/* Loading State */}
           {loading && (
-            <div className="bg-gray-900 rounded-2xl p-12 text-center border border-gray-700">
-              <svg className="animate-spin h-12 w-12 mx-auto mb-4 text-teal-500" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-              </svg>
-              <p className="text-gray-400">Loading records...</p>
+            <div className="glass-card rounded-2xl p-12 text-center">
+              <span className="spinner mx-auto block mb-3" />
+              <p className="text-gray-400 text-sm">Loading records...</p>
             </div>
           )}
 
-          {/* Error State */}
           {!loading && error && (
-            <div className="bg-gray-900 rounded-2xl p-8 text-center border border-gray-700">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-900/50 flex items-center justify-center">
-                <svg className="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-              </div>
-              <p className="text-red-400">{error}</p>
-              <button
-                onClick={goBack}
-                className="mt-6 px-6 py-3 bg-teal-500 text-white font-bold rounded-lg hover:bg-teal-600 transition-colors"
-              >
-                Back
-              </button>
+            <div className="glass-card rounded-2xl p-8 text-center">
+              <p className="text-red-400 text-sm mb-4">{error}</p>
+              <button onClick={goBack} className="btn-secondary px-6 py-2">Back</button>
             </div>
           )}
 
-          {/* Empty State */}
           {!loading && !error && hasPermission && records.length === 0 && (
-            <div className="bg-gray-900 rounded-2xl p-12 text-center border border-gray-700">
-              <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gray-700/50 flex items-center justify-center">
-                <svg className="w-10 h-10 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="glass-card rounded-2xl p-12 text-center">
+              <div className="w-14 h-14 mx-auto mb-5 rounded-2xl bg-white/5 flex items-center justify-center">
+                <svg className="w-7 h-7 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
               </div>
-              <h3 className="text-xl font-semibold text-white mb-2">No Records Found</h3>
-              <p className="text-gray-400 mb-6">This patient has no medical records yet.</p>
-              <button
-                onClick={goBack}
-                className="px-6 py-3 bg-teal-500 text-white font-bold rounded-lg hover:bg-teal-600 transition-colors"
-              >
-                Back
-              </button>
+              <h3 className="text-lg font-semibold text-white mb-2">No records yet</h3>
+              <p className="text-gray-500 text-sm mb-6">This patient has no medical records uploaded.</p>
+              <button onClick={goBack} className="btn-secondary px-6 py-2">Back</button>
             </div>
           )}
 
-          {/* Records List */}
           {!loading && !error && hasPermission && records.length > 0 && (
             <>
-              <div className="bg-gray-900 rounded-2xl overflow-hidden border border-gray-700">
+              <div className="glass-card rounded-2xl overflow-hidden">
                 {records.map((record, index) => (
                   <div
                     key={record.id}
-                    className={`p-4 flex justify-between items-center ${
-                      index !== records.length - 1 ? 'border-b border-gray-700' : ''
+                    className={`px-5 py-4 flex justify-between items-center ${
+                      index !== records.length - 1 ? "border-b border-white/5" : ""
                     }`}
                   >
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3">
-                        <p className="text-yellow-500 font-mono">
-                          Record : <span className="text-cyan-400">{record.id}</span>
-                        </p>
-                        <span className="px-2 py-1 text-xs bg-gray-700 text-gray-300 rounded">
-                          {RECORD_TYPE_LABELS[record.recordType] || 'Unknown'}
+                    <div>
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <p className="text-white font-medium text-sm">Record #{record.id}</p>
+                        <span className="badge-success text-xs">
+                          {RECORD_TYPE_LABELS[record.recordType] || "Unknown"}
                         </span>
                       </div>
-                      <p className="text-yellow-500 font-mono text-sm">
-                        Uploaded : <span className="text-gray-400">{formatDate(record.uploadedAt)}</span>
-                      </p>
+                      <p className="text-gray-500 text-xs">Uploaded: {formatDate(record.uploadedAt)}</p>
                     </div>
-                    <button
-                      onClick={() => openRecord(record)}
-                      className="px-6 py-2 bg-teal-500 text-white font-bold rounded-lg hover:bg-teal-600 transition-colors"
-                    >
+                    <button onClick={() => openRecord(record)} className="btn-primary px-4 py-2 text-sm">
                       View
                     </button>
                   </div>
                 ))}
               </div>
+              {/* Consultation Notes */}
+              <div className="mt-6 glass-card rounded-2xl p-5">
+                <h3 className="text-white font-semibold mb-1">Consultation Notes</h3>
+                <p className="text-xs text-gray-500 mb-3">Private notes — stored locally, not shared on-chain.</p>
+                <textarea
+                  value={notes}
+                  onChange={(e) => { setNotes(e.target.value); setNotesSaved(false); }}
+                  rows={5}
+                  placeholder="Enter your clinical observations, diagnosis, or follow-up notes..."
+                  className="glass-input w-full resize-none text-sm"
+                />
+                <div className="flex items-center justify-between mt-3">
+                  <span className={`text-xs transition-opacity ${notesSaved ? "text-green-400 opacity-100" : "opacity-0"}`}>
+                    Notes saved
+                  </span>
+                  <button onClick={saveNotes} className="btn-primary px-5 py-2 text-sm">
+                    Save Notes
+                  </button>
+                </div>
+              </div>
 
-              {/* Back Button */}
-              <div className="flex justify-center mt-6">
-                <button
-                  onClick={goBack}
-                  className="px-8 py-3 bg-teal-500 text-white font-bold rounded-lg hover:bg-teal-600 transition-colors"
-                >
-                  Back
+              <div className="mt-5">
+                <button onClick={goBack} className="btn-secondary w-full py-3">
+                  ← Back to Patient List
                 </button>
               </div>
             </>

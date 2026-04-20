@@ -1,7 +1,3 @@
-/**
- * ConnectWallet Component
- * Handles MetaMask wallet connection with proper network detection
- */
 
 import React, { useState, useEffect } from 'react';
 import Web3 from 'web3';

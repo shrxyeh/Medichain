@@ -2,9 +2,9 @@ import React, { useState, useEffect } from "react";
 import Web3 from "web3";
 import PatientRegistration from "../build/contracts/PatientRegistration.json";
 import { useNavigate } from "react-router-dom";
-import "../CSS/PatientRegistration.css";
 import NavBar from "./NavBar";
 import ConnectWallet from "./ConnectWallet";
+import { hashPassword } from "../utils/hashPassword";
 
 const PatientRegistry = () => {
   const [web3, setWeb3] = useState(null);
@@ -18,6 +18,7 @@ const PatientRegistry = () => {
   const [walletAddress, setWalletAddress] = useState("");
   const [gender, setGender] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [formError, setFormError] = useState("");
   const [bg, setBloodGroup] = useState("");
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState("");
@@ -44,13 +45,16 @@ const PatientRegistry = () => {
         const networkId = await web3Instance.eth.net.getId();
         const networkIdStr = networkId.toString();
 
-        // Try to find the network in the contract's networks
+        if (networkIdStr !== "31337") {
+          setFormError(`Wrong network detected (Chain ${networkIdStr}). Switch MetaMask to Anvil Local (Chain ID: 31337, RPC: http://127.0.0.1:8545).`);
+          return;
+        }
+
         const deployedNetwork = PatientRegistration.networks[networkIdStr] ||
                                PatientRegistration.networks["31337"];
 
         if (!deployedNetwork || !deployedNetwork.address) {
-          console.error("Contract not deployed on this network. Expected network 31337 (Anvil)");
-          alert("Contract not found. Please make sure:\n1. Anvil is running\n2. Contracts are deployed (npm run deploy)\n3. MetaMask is on Anvil network (Chain ID: 31337)");
+          setFormError("Contract not found. Make sure Anvil is running and contracts are deployed ('npm run deploy').");
           return;
         }
 
@@ -71,39 +75,25 @@ const PatientRegistry = () => {
   }, []);
 
   const handleRegister = async () => {
+    setFormError("");
     if (
-      !walletAddress ||
-      !name ||
-      !dateOfBirth ||
-      !homeAddress ||
-      !hhNumber ||
-      !gender ||
-      !bg ||
-      !email ||
-      !walletAddress ||
-      !password ||
-      !confirmPassword
-    )
-     {
-      alert(
-        "You have missing input fields. Please fill in all the required fields."
-      );
+      !walletAddress || !name || !dateOfBirth || !homeAddress ||
+      !hhNumber || !gender || !bg || !email || !password || !confirmPassword
+    ) {
+      setFormError("Please fill in all required fields.");
       return;
     }
 
     if (hhNumber.length !== 6) {
-      alert(
-        "You have entered a wrong HH Number. Please enter a 6-digit HH Number."
-      );
+      setFormError("HH Number must be exactly 6 digits.");
       return;
     }
 
-    // Password validation: minimum length
     if (password.length < 8) {
-    setPassword("");
-    setConfirmPassword("");
-    setPasswordError("Password must be atleast 8 characters long.");
-    return;
+      setPassword("");
+      setConfirmPassword("");
+      setPasswordError("Password must be at least 8 characters long.");
+      return;
     }
 
     if (password !== confirmPassword) {
@@ -112,41 +102,30 @@ const PatientRegistry = () => {
       return;
     }
 
-    // Check if dateOfBirth is in the format dd/mm/yyyy
-    const datePattern = /^\d{4}-\d{2}-\d{2}$/;
-    if (!datePattern.test(dateOfBirth)) {
-      alert("Please enter Date of Birth in the format dd/mm/yyyy");
-      return;
-    }
-
-    // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       setEmailError("Please enter a valid email address.");
       return;
     } else {
-      setEmailError(""); // Clear email error if valid
+      setEmailError("");
     }
 
-    // Password validation: minimum length
-    if (password.length < 8) {
-      alert("Password must be at least 8 characters long.");
-      return;
-    }
-
-      
+    setIsLoading(true);
     try {
       const web3 = new Web3(window.ethereum);
-
       const networkId = await web3.eth.net.getId();
       const networkIdStr = networkId.toString();
 
-      // Find deployed network - try current network first, then fallback to 31337
+      if (networkIdStr !== "31337") {
+        setFormError(`Wrong network (Chain ${networkIdStr}). Switch MetaMask to Anvil Local — Chain ID: 31337, RPC: http://127.0.0.1:8545.`);
+        return;
+      }
+
       const deployedNetwork = PatientRegistration.networks[networkIdStr] ||
                              PatientRegistration.networks["31337"];
 
       if (!deployedNetwork || !deployedNetwork.address) {
-        alert("Contract not deployed. Please run 'npm run deploy' first.");
+        setFormError("Contract not deployed. Please run 'npm run deploy' first.");
         return;
       }
 
@@ -155,35 +134,22 @@ const PatientRegistry = () => {
         deployedNetwork.address
       );
 
-      const isRegPatient = await contract.methods
-        .isRegisteredPatient(hhNumber)
-        .call();
-
+      const isRegPatient = await contract.methods.isRegisteredPatient(hhNumber).call();
       if (isRegPatient) {
-        alert("Patient already exists");
+        setFormError("An account with this HH Number already exists.");
         return;
       }
 
       await contract.methods
-      .registerPatient(
-        walletAddress,
-        name,
-        dateOfBirth,
-        gender,
-        bg,
-        homeAddress,
-        email,
-        hhNumber,
-        password
-      )
-      .send({ from: walletAddress });
+        .registerPatient(walletAddress, name, dateOfBirth, gender, bg, homeAddress, email, hhNumber, hashPassword(password))
+        .send({ from: walletAddress });
 
-      alert("Patient registered successfully!");
       navigate("/");
-      } catch (error) {
-        console.error("Error:", error);
-        alert("An error occurred while registering. Please check the console for details.");
-      }
+    } catch (error) {
+      setFormError("Registration failed. Check MetaMask and try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
   
 
@@ -219,14 +185,19 @@ const PatientRegistry = () => {
   };
 
   return (
-    <div>
-    <NavBar></NavBar>
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-b from-black to-gray-800 font-mono">
+    <div className="min-h-screen bg-gradient-to-br from-dark-950 via-dark-900 to-dark-800">
+    <NavBar />
+    <div className="min-h-screen flex items-center justify-center p-4 pt-20">
       <div className="w-full max-w-4xl">
-        <h2 className="text-3xl text-white mb-6 font-bold text-center">
-         Patient Registration
+        <h2 className="text-3xl text-white mb-6 font-bold">
+          Patient Registration
         </h2>
-        <form className="bg-gray-900 p-6 rounded-lg shadow-lg grid grid-cols-1 md:grid-cols-2 gap-4">
+        {formError && (
+          <div className="mb-4 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+            {formError}
+          </div>
+        )}
+        <form className="glass-card p-6 rounded-2xl grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Wallet Connection - Full Width */}
           <div className="md:col-span-2 mb-4">
             <label className="block font-bold text-white mb-2">
@@ -268,7 +239,7 @@ const PatientRegistry = () => {
               placeholder="Enter Full Name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="mt-2 p-2 w-full text-white bg-gray-700 border border-gray-600 rounded-md hover:bg-gray-800 transition duration-200"
+              className="mt-2 p-2 w-full text-white glass-input"
             />
           </div>
 
@@ -281,7 +252,7 @@ const PatientRegistry = () => {
               name="dateOfBirth"
               type="date" // Use type="date" for date picker
               required
-              className="mt-2 p-2 w-full text-white bg-gray-700 border border-gray-600 rounded-md hover-bg-gray-800 transition duration-200"
+              className="glass-input mt-1"
               value={dateOfBirth}
               onChange={(e) => setDateOfBirth(e.target.value)}
             />
@@ -297,7 +268,7 @@ const PatientRegistry = () => {
             required
             value={gender}
             onChange={(e) => setGender(e.target.value)}
-            className="mt-2 p-2 w-full text-white bg-gray-700 border border-gray-600 rounded-md hover-bg-gray-800 transition duration-200"
+            className="glass-input mt-1"
           >
             <option value="">Select Gender</option>
             <option value="Male">Male</option>
@@ -316,7 +287,7 @@ const PatientRegistry = () => {
             required
             value={bg}
             onChange={(e) => setBloodGroup(e.target.value)}
-            className="mt-2 p-2 w-full text-white bg-gray-700 border border-gray-600 rounded-md hover-bg-gray-800 transition duration-200"
+            className="glass-input mt-1"
           >
             <option value="">Select Blood Group</option>
             <option value="A+">A+</option>
@@ -341,7 +312,7 @@ const PatientRegistry = () => {
               placeholder="Enter your Permanent Address"
               value={homeAddress}
               onChange={(e) => setHomeAddress(e.target.value)}
-              className="mt-2 p-2 w-full text-white bg-gray-700 border border-gray-600 rounded-md hover:bg-gray-800 transition duration-200"
+              className="mt-2 p-2 w-full text-white glass-input"
             />
           </div>
 
@@ -354,7 +325,7 @@ const PatientRegistry = () => {
               name="hhNumber"
               type="text"
               required
-              className={`mt-2 p-2 w-full text-white bg-gray-700 border border-gray-600 rounded-md hover-bg-gray-800 transition duration-200 ${hhNumberError && "border-red-500"}`}
+              className={`glass-input mt-1 ${hhNumberError && "border-red-500"}`}
               placeholder="Enter your HH Number"
               value={hhNumber}
               onChange={handlehhNumberChange}
@@ -373,7 +344,7 @@ const PatientRegistry = () => {
               name="email"
               type="email"
               required
-              className={`mt-2 p-2 w-full text-white bg-gray-700 border border-gray-600 rounded-md hover-bg-gray-800 transition duration-200 ${
+              className={`glass-input mt-1 ${
                 emailError && "border-red-500"
               }`}
               placeholder="Enter your Email-id"
@@ -394,7 +365,7 @@ const PatientRegistry = () => {
                 name="password"
                 type="password"
                 required
-                className={`mt-2 p-2 w-full text-white bg-gray-700 border border-gray-600 rounded-md hover-bg-gray-800 transition duration-200 ${
+                className={`glass-input mt-1 ${
                   passwordError && "border-red-500"
                 }`}
                 placeholder="Enter your Password"
@@ -415,7 +386,7 @@ const PatientRegistry = () => {
                 name="confirmPassword"
                 type="password"
                 required
-                className={`mt-2 p-2 w-full text-white bg-gray-700 border border-gray-600 rounded-md hover-bg-gray-800 transition duration-200 ${
+                className={`glass-input mt-1 ${
                   confirmPasswordError && "border-red-500"
                 }`}
                 placeholder="Confirm your Password"
@@ -432,10 +403,15 @@ const PatientRegistry = () => {
             <button
               type="button"
               onClick={handleRegister}
-              disabled={!contract || isLoading}
-              className="px-5 py-2.5 bg-teal-500 text-white font-bold text-lg rounded-lg cursor-pointer transition-colors duration-300 ease-in-out hover:bg-gray-600 disabled:bg-gray-500 disabled:cursor-not-allowed w-full md:w-auto"
+              disabled={isLoading}
+              className="px-5 py-2.5 bg-teal-500 text-white font-bold text-lg rounded-lg cursor-pointer transition-colors duration-300 ease-in-out hover:bg-gray-600 disabled:bg-teal-500/40 disabled:cursor-not-allowed w-full md:w-auto flex items-center gap-2"
             >
-              Register
+              {isLoading ? (
+                <>
+                  <span className="spinner" />
+                  Registering...
+                </>
+              ) : "Register"}
             </button>
             <button
               onClick={cancelOperation}

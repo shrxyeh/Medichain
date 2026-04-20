@@ -27,7 +27,7 @@ const DoctorDashBoard = () => {
   useEffect(() => {
     const init = async () => {
       if (!window.ethereum) {
-        console.error("Please install MetaMask extension");
+
         return;
       }
 
@@ -38,7 +38,7 @@ const DoctorDashBoard = () => {
           DoctorRegistration.networks["31337"];
 
         if (!deployedNetwork) {
-          console.error("Contract not deployed on this network");
+
           return;
         }
 
@@ -58,7 +58,7 @@ const DoctorDashBoard = () => {
           }, "doctor");
         }
       } catch (error) {
-        console.error("Error initializing:", error);
+
       }
     };
 

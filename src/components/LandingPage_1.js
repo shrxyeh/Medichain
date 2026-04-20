@@ -1,6 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import NavBar from "./NavBar";
+import Footer from "./Footer";
 
 function LandingPage() {
   const navigate = useNavigate();
@@ -200,7 +201,7 @@ function LandingPage() {
               Ready to Secure Your Health Data?
             </h2>
             <p className="text-gray-400 mb-8 max-w-2xl mx-auto">
-              Join thousands of patients and healthcare providers who trust MediChain for secure, private health record management.
+              Take full ownership of your health data — share it only when you choose, with anyone you trust, for exactly as long as you decide.
             </p>
             <button
               onClick={() => navigate("/register")}
@@ -211,6 +212,8 @@ function LandingPage() {
           </div>
         </div>
       </section>
+
+      <Footer />
     </div>
   );
 }

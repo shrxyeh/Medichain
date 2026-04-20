@@ -76,6 +76,16 @@ code {
     box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.2);
   }
 
+  /* Fix native select dropdown options */
+  .glass-input option {
+    background: #1e293b;
+    color: #f1f5f9;
+  }
+
+  select.glass-input {
+    color-scheme: dark;
+  }
+
   /* Primary button */
   .btn-primary {
     @apply px-6 py-3 rounded-xl font-medium text-white transition-all duration-300;

@@ -2,8 +2,8 @@ import React, { useState, useEffect } from "react";
 import Web3 from "web3";
 import DoctorRegistration from "../build/contracts/DoctorRegistration.json";
 import { useNavigate } from "react-router-dom";
-import "../CSS/DoctorRegistration.css";
 import NavBar from "./NavBar";
+import { hashPassword } from "../utils/hashPassword";
 
 const DoctorRegistry = () => {
   const [web3, setWeb3] = useState(null);
@@ -27,8 +27,10 @@ const DoctorRegistry = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [confirmPasswordError, setConfirmPasswordError] = useState("");
-  const [email, setEmail] = useState(""); 
+  const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [formError, setFormError] = useState("");
 
   const navigate = useNavigate();
 
@@ -37,22 +39,25 @@ const DoctorRegistry = () => {
       if (window.ethereum) {
         const web3Instance = new Web3(window.ethereum);
         try {
-          await window.ethereum.enable();
+          await window.ethereum.request({ method: "eth_requestAccounts" });
           setWeb3(web3Instance);
 
           const networkId = await web3Instance.eth.net.getId();
-          const deployedNetwork = DoctorRegistration.networks[networkId];
+          const deployedNetwork =
+            DoctorRegistration.networks[networkId] ||
+            DoctorRegistration.networks["31337"];
+          if (!deployedNetwork) return;
           const contractInstance = new web3Instance.eth.Contract(
             DoctorRegistration.abi,
-            deployedNetwork && deployedNetwork.address
+            deployedNetwork.address
           );
 
           setContract(contractInstance);
         } catch (error) {
-          console.error("User denied access to accounts.");
+
         }
       } else {
-        console.log("Please install MetaMask extension");
+
       }
     };
 
@@ -60,41 +65,26 @@ const DoctorRegistry = () => {
   }, []);
 
   const handleRegister = async () => {
+    setFormError("");
     if (
-      !doctorAddress ||
-      !doctorName ||
-      !hospitalName ||
-      !hospitalLocation ||
-      !dateOfBirth ||
-      !gender ||
-      !email ||
-      !hhNumber ||
-      !specialization ||
-      !department ||
-      !designation ||
-      !workExperience ||
-      !password ||
-      !confirmPassword
+      !doctorAddress || !doctorName || !hospitalName || !hospitalLocation ||
+      !dateOfBirth || !gender || !email || !hhNumber || !specialization ||
+      !department || !designation || !workExperience || !password || !confirmPassword
     ) {
-      alert(
-        "You have missing input fields. Please fill in all the required fields."
-      );
+      setFormError("Please fill in all required fields.");
       return;
     }
 
     if (hhNumber.length !== 6) {
-      alert(
-        "You have entered a wrong HH Number. Please enter a 6-digit HH Number."
-      );
+      setFormError("HH Number must be exactly 6 digits.");
       return;
     }
 
-     // Password validation: minimum length
     if (password.length < 8) {
-    setPassword("");
-    setConfirmPassword("");
-    setPasswordError("Password must be atleast 8 characters long.");
-    return;
+      setPassword("");
+      setConfirmPassword("");
+      setPasswordError("Password must be at least 8 characters long.");
+      return;
     }
 
     if (password !== confirmPassword) {
@@ -102,57 +92,58 @@ const DoctorRegistry = () => {
       setConfirmPasswordError("Passwords do not match.");
       return;
     }
-    
-    // Email validation
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       setEmailError("Please enter a valid email address.");
       return;
     } else {
-      setEmailError(""); // Clear email error if valid
+      setEmailError("");
     }
-      
+
+    setIsLoading(true);
     try {
       const web3 = new Web3(window.ethereum);
-
       const networkId = await web3.eth.net.getId();
+      const networkIdStr = networkId.toString();
+
+      if (networkIdStr !== "31337") {
+        setFormError(`Wrong network (Chain ${networkIdStr}). Switch MetaMask to Anvil Local — Chain ID: 31337, RPC: http://127.0.0.1:8545.`);
+        return;
+      }
+
+      const deployedNetwork = DoctorRegistration.networks[networkIdStr] ||
+        DoctorRegistration.networks["31337"];
+
+      if (!deployedNetwork) {
+        setFormError("Contract not deployed. Please run 'npm run deploy' first.");
+        return;
+      }
 
       const contract = new web3.eth.Contract(
         DoctorRegistration.abi,
-        DoctorRegistration.networks[networkId].address
+        deployedNetwork.address
       );
 
-      const isRegDoc = await contract.methods
-        .isRegisteredDoctor(hhNumber)
-        .call();
-
+      const isRegDoc = await contract.methods.isRegisteredDoctor(hhNumber).call();
       if (isRegDoc) {
-        alert("Doctor already exists");
+        setFormError("An account with this HH Number already exists.");
         return;
       }
 
       await contract.methods
         .registerDoctor(
-          doctorName,
-          hospitalName,
-          dateOfBirth,
-          gender,
-          email,
-          hhNumber,
-          specialization,
-          department,
-          designation,
-          workExperience,
-          password // Include password in the function call
+          doctorName, hospitalName, dateOfBirth, gender, email, hhNumber,
+          specialization, department, designation, workExperience, hashPassword(password)
         )
         .send({ from: doctorAddress });
 
-      alert("Doctor registered successfully!");
       navigate("/");
-      } catch (error) {
-        console.error("Error:", error);
-        alert("An error occurred while registering the doctor.");
-      }
+    } catch (error) {
+      setFormError("Registration failed. Check MetaMask and try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
   
     const handleEmailChange = (e) => {
@@ -214,14 +205,19 @@ const DoctorRegistry = () => {
   };
 
   return (
-    <div>
-    <NavBar></NavBar>
-    <div className="createehr min-h-screen flex items-center justify-center p-4 bg-gradient-to-b from-black to-gray-800 font-mono">
+    <div className="min-h-screen bg-gradient-to-br from-dark-950 via-dark-900 to-dark-800">
+    <NavBar />
+    <div className="min-h-screen flex items-center justify-center p-4 pt-20">
       <div className="w-full max-w-2xl">
-        <h2 className="text-3xl text-white mb-6 font-bold text-center">
+        <h2 className="text-3xl text-white mb-6 font-bold">
           Doctor Registration
         </h2>
-        <form className="bg-gray-900 p-6 rounded-lg shadow-lg grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {formError && (
+          <div className="mb-4 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+            {formError}
+          </div>
+        )}
+        <form className="glass-card p-6 rounded-2xl grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="mb-4">
             <label
               className="block font-bold text-white"
@@ -234,7 +230,7 @@ const DoctorRegistry = () => {
               name="doctorAddress"
               type="text"
               required
-              className="mt-2 p-2 w-full text-white bg-gray-700 border border-gray-600 rounded-md hover:bg-gray-800 transition duration-200"
+              className="mt-2 p-2 w-full text-white glass-input"
               placeholder="Crypto Wallet's Public Address"
               value={doctorAddress}
               onChange={(e) => setDoctorAddress(e.target.value)}
@@ -249,7 +245,7 @@ const DoctorRegistry = () => {
               name="doctorName"
               type="text"
               required
-              className="mt-2 p-2 w-full text-white bg-gray-700 border border-gray-600 rounded-md hover:bg-gray-800 transition duration-200"
+              className="mt-2 p-2 w-full text-white glass-input"
               placeholder="Enter Full Name"
               value={doctorName}
               onChange={(e) => setDoctorName(e.target.value)}
@@ -267,7 +263,7 @@ const DoctorRegistry = () => {
               name="hospitalName"
               type="text"
               required
-              className="mt-2 p-2 w-full text-white bg-gray-700 border border-gray-600 rounded-md hover:bg-gray-800 transition duration-200"
+              className="mt-2 p-2 w-full text-white glass-input"
               placeholder="Enter Hospital Name"
               value={hospitalName}
               onChange={(e) => setHospitalName(e.target.value)}
@@ -285,7 +281,7 @@ const DoctorRegistry = () => {
               name="hospitalLocation"
               type="text"
               required
-              className="mt-2 p-2 w-full text-white bg-gray-700 border border-gray-600 rounded-md hover:bg-gray-800 transition duration-200"
+              className="mt-2 p-2 w-full text-white glass-input"
               placeholder="Enter Hospital Location"
               value={hospitalLocation}
               onChange={(e) => setHospitalLocation(e.target.value)}
@@ -300,7 +296,7 @@ const DoctorRegistry = () => {
               name="dateOfBirth"
               type="date" // Use type="date" for date picker
               required
-              className="mt-2 p-2 w-full text-white bg-gray-700 border border-gray-600 rounded-md hover-bg-gray-800 transition duration-200"
+              className="glass-input mt-1"
               value={dateOfBirth}
               onChange={(e) => setDateOfBirth(e.target.value)}
             />
@@ -315,7 +311,7 @@ const DoctorRegistry = () => {
               required
               value={gender}
               onChange={(e) => setGender(e.target.value)}
-              className="mt-2 p-2 w-full text-white bg-gray-700 border border-gray-600 rounded-md hover-bg-gray-800 transition duration-200"
+              className="glass-input mt-1"
             >
               <option value="">Select Gender</option>
               <option value="Male">Male</option>
@@ -333,7 +329,7 @@ const DoctorRegistry = () => {
               name="email"
               type="email"
               required
-              className={`mt-2 p-2 w-full text-white bg-gray-700 border border-gray-600 rounded-md hover-bg-gray-800 transition duration-200 ${
+              className={`glass-input mt-1 ${
                 emailError && "border-red-500"
               }`}
               placeholder="Enter your Email-id"
@@ -354,7 +350,7 @@ const DoctorRegistry = () => {
               name="hhNumber"
               type="text"
               required
-              className={`mt-2 p-2 w-full text-white bg-gray-700 border border-gray-600 rounded-md hover-bg-gray-800 transition duration-200 ${hhNumberError && "border-red-500"}`}
+              className={`glass-input mt-1 ${hhNumberError && "border-red-500"}`}
               placeholder="Enter your HH Number"
               value={hhNumber}
               onChange={handlehhNumberChange}
@@ -375,7 +371,7 @@ const DoctorRegistry = () => {
               id="specialization"
               name="specialization"
               required
-              className="mt-2 p-2 w-full text-white bg-gray-700 border border-gray-600 rounded-md hover-bg-gray-800 transition duration-200"
+              className="glass-input mt-1"
               value={specialization}
               onChange={handleSpecializationChange}
             >
@@ -394,7 +390,7 @@ const DoctorRegistry = () => {
               <input
                 type="text"
                 placeholder="Enter Other Specialization"
-                className="mt-2 p-2 w-full text-white bg-gray-700 border border-gray-600 rounded-md hover-bg-gray-800 transition duration-200"
+                className="glass-input mt-1"
                 value={specializationError}
                 onChange={(e) => setSpecializationError(e.target.value)}
               />
@@ -412,7 +408,7 @@ const DoctorRegistry = () => {
               id="department"
               name="department"
               required
-              className="mt-2 p-2 w-full text-white bg-gray-700 border border-gray-600 rounded-md hover-bg-gray-800 transition duration-200"
+              className="glass-input mt-1"
               value={department}
               onChange={handleDepartmentChange}
             >
@@ -426,7 +422,7 @@ const DoctorRegistry = () => {
               <input
                 type="text"
                 placeholder="Enter Other Department"
-                className="mt-2 p-2 w-full text-white bg-gray-700 border border-gray-600 rounded-md hover-bg-gray-800 transition duration-200"
+                className="glass-input mt-1"
                 value={departmentError}
                 onChange={(e) => setDepartmentError(e.target.value)}
               />
@@ -444,7 +440,7 @@ const DoctorRegistry = () => {
               id="designation"
               name="designation"
               required
-              className="mt-2 p-2 w-full text-white bg-gray-700 border border-gray-600 rounded-md hover-bg-gray-800 transition duration-200"
+              className="glass-input mt-1"
               value={designation}
               onChange={handleDesignationChange}
             >
@@ -458,7 +454,7 @@ const DoctorRegistry = () => {
               <input
                 type="text"
                 placeholder="Enter Other Designation"
-                className="mt-2 p-2 w-full text-white bg-gray-700 border border-gray-600 rounded-md hover-bg-gray-800 transition duration-200"
+                className="glass-input mt-1"
                 value={designationError}
                 onChange={(e) => setDesignationError(e.target.value)}
               />
@@ -477,7 +473,7 @@ const DoctorRegistry = () => {
               name="workExperience"
               type="number"
               required
-              className="mt-2 p-2 w-full text-white bg-gray-700 border border-gray-600 rounded-md hover-bg-gray-800 transition duration-200"
+              className="glass-input mt-1"
               placeholder="Years"
               min="0"
               value={workExperience}
@@ -494,7 +490,7 @@ const DoctorRegistry = () => {
                 name="password"
                 type="password"
                 required
-                className={`mt-2 p-2 w-full text-white bg-gray-700 border border-gray-600 rounded-md hover-bg-gray-800 transition duration-200 ${
+                className={`glass-input mt-1 ${
                   passwordError && "border-red-500"
                 }`}
                 placeholder="Enter your Password"
@@ -515,7 +511,7 @@ const DoctorRegistry = () => {
                 name="confirmPassword"
                 type="password"
                 required
-                className={`mt-2 p-2 w-full text-white bg-gray-700 border border-gray-600 rounded-md hover-bg-gray-800 transition duration-200 ${
+                className={`glass-input mt-1 ${
                   confirmPasswordError && "border-red-500"
                 }`}
                 placeholder="Confirm your Password"
@@ -532,9 +528,15 @@ const DoctorRegistry = () => {
           <button
             type="button"
             onClick={handleRegister}
-            className="py-3 px-4 bg-teal-500 text-white rounded-md font-medium hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
+            disabled={isLoading}
+            className="py-3 px-4 bg-teal-500 text-white rounded-md font-medium hover:bg-gray-600 disabled:bg-teal-500/40 disabled:cursor-not-allowed focus:outline-none flex items-center gap-2"
           >
-            Register 
+            {isLoading ? (
+              <>
+                <span className="spinner" />
+                Registering...
+              </>
+            ) : "Register"}
             </button>
             <button
               onClick={cancelOperation}

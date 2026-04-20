@@ -1,12 +1,10 @@
-/**
- * AccessControlPanel Component
- * Displays ABAC policies and access management UI
- */
 
 import React, { useState, useEffect } from 'react';
+import Web3 from 'web3';
+import DoctorRegistration from '../build/contracts/DoctorRegistration.json';
 import { useSecurityContext } from '../context/SecurityContext';
 
-const AccessControlPanel = ({ onClose }) => {
+const AccessControlPanel = ({ onClose, fallbackHhNumber, fallbackName }) => {
   const {
     currentUser,
     accessLog,
@@ -16,8 +14,18 @@ const AccessControlPanel = ({ onClose }) => {
     ACTIONS,
   } = useSecurityContext();
 
+  // Use currentUser if available, otherwise fall back to props from parent
+  const sessionHhNumber = currentUser?.hhNumber || fallbackHhNumber;
+  const sessionName = currentUser?.name || fallbackName;
+
   const [activeTab, setActiveTab] = useState('overview');
   const [filteredLog, setFilteredLog] = useState([]);
+
+  // Permission management state
+  const [grantDoctorHH, setGrantDoctorHH] = useState('');
+  const [revokeDoctorHH, setRevokeDoctorHH] = useState('');
+  const [permMessage, setPermMessage] = useState({ type: '', text: '' });
+  const [permLoading, setPermLoading] = useState(false);
 
   useEffect(() => {
     setFilteredLog(getAccessLog().slice(-20).reverse());
@@ -32,6 +40,73 @@ const AccessControlPanel = ({ onClose }) => {
       [ROLES.EMERGENCY]: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
     };
     return colors[role] || 'bg-gray-500/20 text-gray-400 border-gray-500/30';
+  };
+
+  const getContract = async () => {
+    const web3 = new Web3(window.ethereum);
+    await window.ethereum.request({ method: 'eth_requestAccounts' });
+    const networkId = await web3.eth.net.getId();
+    const deployed = DoctorRegistration.networks[networkId.toString()] ||
+                     DoctorRegistration.networks['31337'];
+    if (!deployed) throw new Error('Contract not deployed on this network');
+    return { web3, contract: new web3.eth.Contract(DoctorRegistration.abi, deployed.address) };
+  };
+
+  const handleGrant = async () => {
+    if (!grantDoctorHH || !/^\d{6}$/.test(grantDoctorHH)) {
+      setPermMessage({ type: 'error', text: 'Enter a valid 6-digit doctor HH Number.' });
+      return;
+    }
+    if (!sessionHhNumber) {
+      setPermMessage({ type: 'error', text: 'No active session. Please log in again.' });
+      return;
+    }
+    setPermLoading(true);
+    setPermMessage({ type: '', text: '' });
+    try {
+      const { web3, contract } = await getContract();
+      const accounts = await web3.eth.getAccounts();
+      const isDoc = await contract.methods.isRegisteredDoctor(grantDoctorHH).call();
+      if (!isDoc) {
+        setPermMessage({ type: 'error', text: 'Doctor HH Number not found in registry.' });
+        return;
+      }
+      await contract.methods
+        .grantPermission(sessionHhNumber, grantDoctorHH, sessionName)
+        .send({ from: accounts[0] });
+      setPermMessage({ type: 'success', text: `Access granted to doctor ${grantDoctorHH}.` });
+      setGrantDoctorHH('');
+    } catch (e) {
+      setPermMessage({ type: 'error', text: 'Transaction failed. Check MetaMask and try again.' });
+    } finally {
+      setPermLoading(false);
+    }
+  };
+
+  const handleRevoke = async () => {
+    if (!revokeDoctorHH || !/^\d{6}$/.test(revokeDoctorHH)) {
+      setPermMessage({ type: 'error', text: 'Enter a valid 6-digit doctor HH Number.' });
+      return;
+    }
+    if (!sessionHhNumber) {
+      setPermMessage({ type: 'error', text: 'No active session. Please log in again.' });
+      return;
+    }
+    setPermLoading(true);
+    setPermMessage({ type: '', text: '' });
+    try {
+      const { web3, contract } = await getContract();
+      const accounts = await web3.eth.getAccounts();
+      await contract.methods
+        .revokePermission(sessionHhNumber, revokeDoctorHH)
+        .send({ from: accounts[0] });
+      setPermMessage({ type: 'success', text: `Access revoked from doctor ${revokeDoctorHH}.` });
+      setRevokeDoctorHH('');
+    } catch (e) {
+      setPermMessage({ type: 'error', text: 'Transaction failed. Check MetaMask and try again.' });
+    } finally {
+      setPermLoading(false);
+    }
   };
 
   const getDecisionColor = (allowed) => {
@@ -68,7 +143,7 @@ const AccessControlPanel = ({ onClose }) => {
 
         {/* Tabs */}
         <div className="flex gap-1 p-2 mx-4 mt-4 bg-white/5 rounded-xl">
-          {['overview', 'policies', 'audit'].map((tab) => (
+          {['overview', 'permissions', 'policies', 'audit'].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -143,6 +218,72 @@ const AccessControlPanel = ({ onClose }) => {
                     </div>
                   ))}
                 </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'permissions' && (
+            <div className="space-y-6">
+              {permMessage.text && (
+                <div className={`px-4 py-3 rounded-xl text-sm ${
+                  permMessage.type === 'success'
+                    ? 'bg-green-500/10 border border-green-500/20 text-green-400'
+                    : 'bg-red-500/10 border border-red-500/20 text-red-400'
+                }`}>
+                  {permMessage.text}
+                </div>
+              )}
+
+              {/* Grant Access */}
+              <div className="glass-card-inner p-5 rounded-xl">
+                <h3 className="text-sm font-semibold text-gray-400 mb-1">Grant Doctor Access</h3>
+                <p className="text-xs text-gray-500 mb-4">Enter the doctor's HH Number to allow them to view your records.</p>
+                <div className="flex gap-3">
+                  <input
+                    type="text"
+                    maxLength={6}
+                    placeholder="Doctor HH Number"
+                    value={grantDoctorHH}
+                    onChange={(e) => setGrantDoctorHH(e.target.value)}
+                    className="glass-input flex-1"
+                  />
+                  <button
+                    onClick={handleGrant}
+                    disabled={permLoading}
+                    className="px-5 py-2 bg-teal-500 hover:bg-teal-600 disabled:bg-teal-500/40 text-white text-sm font-medium rounded-lg transition-colors whitespace-nowrap"
+                  >
+                    {permLoading ? 'Wait...' : 'Grant'}
+                  </button>
+                </div>
+              </div>
+
+              {/* Revoke Access */}
+              <div className="glass-card-inner p-5 rounded-xl">
+                <h3 className="text-sm font-semibold text-gray-400 mb-1">Revoke Doctor Access</h3>
+                <p className="text-xs text-gray-500 mb-4">Enter the doctor's HH Number to remove their access to your records.</p>
+                <div className="flex gap-3">
+                  <input
+                    type="text"
+                    maxLength={6}
+                    placeholder="Doctor HH Number"
+                    value={revokeDoctorHH}
+                    onChange={(e) => setRevokeDoctorHH(e.target.value)}
+                    className="glass-input flex-1"
+                  />
+                  <button
+                    onClick={handleRevoke}
+                    disabled={permLoading}
+                    className="px-5 py-2 bg-red-500/80 hover:bg-red-600 disabled:bg-red-500/30 text-white text-sm font-medium rounded-lg transition-colors whitespace-nowrap"
+                  >
+                    {permLoading ? 'Wait...' : 'Revoke'}
+                  </button>
+                </div>
+              </div>
+
+              <div className="glass-card-inner p-4 rounded-xl">
+                <p className="text-xs text-gray-500">
+                  Each grant or revoke triggers a MetaMask transaction — confirm in your wallet. The change is recorded on-chain and takes effect immediately.
+                </p>
               </div>
             </div>
           )}

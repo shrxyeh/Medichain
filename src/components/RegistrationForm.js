@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "../CSS/Register.css";
 
 const RegistrationForm = ({ contract, accounts }) => {
   const [registrationResult, setRegistrationResult] = useState("");
@@ -16,7 +15,7 @@ const RegistrationForm = ({ contract, accounts }) => {
         `Successfully registered as a ${isDoctor ? "doctor" : "patient"}`
       );
     } catch (error) {
-      console.error(error);
+
       setRegistrationResult("Registration failed");
     }
   };

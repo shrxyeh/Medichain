@@ -2,8 +2,8 @@ import React, { useState, useEffect } from "react";
 import Web3 from "web3";
 import DiagnosticRegistration from "../build/contracts/DiagnosticRegistration.json";
 import { useNavigate } from "react-router-dom";
-import "../CSS/DoctorRegistration.css";
 import NavBar from "./NavBar";
+import { hashPassword } from "../utils/hashPassword";
 
 const DiagnosticRegistry = () => {
   const [web3, setWeb3] = useState(null);
@@ -18,8 +18,10 @@ const DiagnosticRegistry = () => {
   const [passwordError, setPasswordError] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [confirmPasswordError, setConfirmPasswordError] = useState("");
-  const [email, setEmail] = useState(""); 
+  const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [formError, setFormError] = useState("");
 
   const navigate = useNavigate();
 
@@ -28,7 +30,7 @@ const DiagnosticRegistry = () => {
       if (window.ethereum) {
         const web3Instance = new Web3(window.ethereum);
         try {
-          await window.ethereum.enable();
+          await window.ethereum.request({ method: "eth_requestAccounts" });
           setWeb3(web3Instance);
 
           const networkId = await web3Instance.eth.net.getId();
@@ -40,10 +42,10 @@ const DiagnosticRegistry = () => {
 
           setContract(contractInstance);
         } catch (error) {
-          console.error("User denied access to accounts.");
+
         }
       } else {
-        console.log("Please install MetaMask extension");
+
       }
     };
 
@@ -52,87 +54,77 @@ const DiagnosticRegistry = () => {
 
 
   const handleRegister = async () => {
+    setFormError("");
     if (
-      !diagnosticAddress ||
-      !diagnosticName ||
-      !hospitalName ||
-      !diagnosticLocation ||
-      !email ||
-      !hhNumber ||
-      !password ||
-      !confirmPassword
+      !diagnosticAddress || !diagnosticName || !hospitalName ||
+      !diagnosticLocation || !email || !hhNumber || !password || !confirmPassword
     ) {
-      alert(
-        "You have missing input fields. Please fill in all the required fields."
-      );
+      setFormError("Please fill in all required fields.");
       return;
     }
 
-     // Password validation: minimum length
-     if (password.length < 8) {
+    if (password.length < 8) {
       setPassword("");
       setConfirmPassword("");
-      setPasswordError("Password must be atleast 8 characters long.");
+      setPasswordError("Password must be at least 8 characters long.");
       return;
-      }
-
-     // Password validation: minimum length
-    if (password.length < 8) {
-    alert("Password must be at least 8 characters long.");
-    return;
     }
-    
+
     if (password !== confirmPassword) {
       setConfirmPassword("");
       setConfirmPasswordError("Passwords do not match.");
       return;
     }
 
-    // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       setEmailError("Please enter a valid email address.");
       return;
     } else {
-      setEmailError(""); // Clear email error if valid
+      setEmailError("");
     }
-      
+
+    setIsLoading(true);
     try {
       const web3 = new Web3(window.ethereum);
-
       const networkId = await web3.eth.net.getId();
+      const networkIdStr = networkId.toString();
+
+      if (networkIdStr !== "31337") {
+        setFormError(`Wrong network (Chain ${networkIdStr}). Switch MetaMask to Anvil Local — Chain ID: 31337, RPC: http://127.0.0.1:8545.`);
+        return;
+      }
+
+      const deployedNetwork =
+        DiagnosticRegistration.networks[networkIdStr] ||
+        DiagnosticRegistration.networks["31337"];
+
+      if (!deployedNetwork) {
+        setFormError("Contract not deployed. Please run 'npm run deploy' first.");
+        return;
+      }
 
       const contract = new web3.eth.Contract(
         DiagnosticRegistration.abi,
-        DiagnosticRegistration.networks[networkId].address
+        deployedNetwork.address
       );
 
-      const isRegDoc = await contract.methods
-        .isRegisteredDiagnostic(hhNumber)
-        .call();
-
+      const isRegDoc = await contract.methods.isRegisteredDiagnostic(hhNumber).call();
       if (isRegDoc) {
-        alert("Diagnostic already exists");
+        setFormError("An account with this HH Number already exists.");
         return;
       }
 
       await contract.methods
-        .registerDiagnostic(
-          diagnosticName,
-          hospitalName,
-          diagnosticLocation,
-          email,
-          hhNumber,
-          password // Include password in the function call
-        )
+        .registerDiagnostic(diagnosticName, hospitalName, diagnosticLocation, email, hhNumber, hashPassword(password))
         .send({ from: diagnosticAddress });
 
-      alert("Diagnostic registered successfully!");
       navigate("/");
-      } catch (error) {
-        console.error("Error:", error);
-        alert("An error occurred while registering the diagnostic.");
-      }
+    } catch (error) {
+      setFormError("Registration failed. Check MetaMask and try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
   
   const handleEmailChange = (e) => {
@@ -168,14 +160,19 @@ const DiagnosticRegistry = () => {
   };
 
   return (
-    <div>
-    <NavBar></NavBar>
-    <div className="createehr min-h-screen flex items-center justify-center p-4 bg-gradient-to-b from-black to-gray-800 font-mono">
+    <div className="min-h-screen bg-gradient-to-br from-dark-950 via-dark-900 to-dark-800">
+    <NavBar />
+    <div className="min-h-screen flex items-center justify-center p-4 pt-20">
       <div className="w-full max-w-2xl">
-        <h2 className="text-3xl text-white mb-6 font-bold text-center">
+        <h2 className="text-3xl text-white mb-6 font-bold">
           Diagnostic Registration
         </h2>
-        <form className="bg-gray-900 p-6 rounded-lg shadow-lg grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {formError && (
+          <div className="mb-4 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+            {formError}
+          </div>
+        )}
+        <form className="glass-card p-6 rounded-2xl grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="mb-4">
             <label
               className="block font-bold text-white"
@@ -188,7 +185,7 @@ const DiagnosticRegistry = () => {
               name="diagnosticAddress"
               type="text"
               required
-              className="mt-2 p-2 w-full text-white bg-gray-700 border border-gray-600 rounded-md hover:bg-gray-800 transition duration-200"
+              className="mt-2 p-2 w-full text-white glass-input"
               placeholder="Crypto Wallet Public Address"
               value={diagnosticAddress}
               onChange={(e) => setDiagnosticAddress(e.target.value)}
@@ -203,7 +200,7 @@ const DiagnosticRegistry = () => {
               name="diagnosticName"
               type="text"
               required
-              className="mt-2 p-2 w-full text-white bg-gray-700 border border-gray-600 rounded-md hover:bg-gray-800 transition duration-200"
+              className="mt-2 p-2 w-full text-white glass-input"
               placeholder="Enter Diagnostic's Center Full Name"
               value={diagnosticName}
               onChange={(e) => setDiagnosticName(e.target.value)}
@@ -221,7 +218,7 @@ const DiagnosticRegistry = () => {
               name="hospitalName"
               type="text"
               required
-              className="mt-2 p-2 w-full text-white bg-gray-700 border border-gray-600 rounded-md hover:bg-gray-800 transition duration-200"
+              className="mt-2 p-2 w-full text-white glass-input"
               placeholder="Enter Hospital Name"
               value={hospitalName}
               onChange={(e) => setHospitalName(e.target.value)}
@@ -239,7 +236,7 @@ const DiagnosticRegistry = () => {
               placeholder="Enter the location of Diagnostic center"
               value={diagnosticLocation}
               onChange={(e) => setDiagnosticLocation(e.target.value)}
-              className="mt-2 p-2 w-full text-white bg-gray-700 border border-gray-600 rounded-md hover:bg-gray-800 transition duration-200"
+              className="mt-2 p-2 w-full text-white glass-input"
             />
             </div>
           
@@ -252,7 +249,7 @@ const DiagnosticRegistry = () => {
               name="email"
               type="email"
               required
-              className={`mt-2 p-2 w-full text-white bg-gray-700 border border-gray-600 rounded-md hover-bg-gray-800 transition duration-200 ${
+              className={`glass-input mt-1 ${
                 emailError && "border-red-500"
               }`}
               placeholder="Enter your Email-id"
@@ -273,7 +270,7 @@ const DiagnosticRegistry = () => {
               name="hhNumber"
               type="text"
               required
-              className={`mt-2 p-2 w-full text-white bg-gray-700 border border-gray-600 rounded-md hover-bg-gray-800 transition duration-200 ${hhNumberError && "border-red-500"}`}
+              className={`glass-input mt-1 ${hhNumberError && "border-red-500"}`}
               placeholder="HH Number"
               value={hhNumber}
               onChange={handlehhNumberChange}
@@ -292,7 +289,7 @@ const DiagnosticRegistry = () => {
                 name="password"
                 type="password"
                 required
-                className={`mt-2 p-2 w-full text-white bg-gray-700 border border-gray-600 rounded-md hover-bg-gray-800 transition duration-200 ${
+                className={`glass-input mt-1 ${
                   passwordError && "border-red-500"
                 }`}
                 placeholder="Enter your Password"
@@ -313,7 +310,7 @@ const DiagnosticRegistry = () => {
                 name="confirmPassword"
                 type="password"
                 required
-                className={`mt-2 p-2 w-full text-white bg-gray-700 border border-gray-600 rounded-md hover-bg-gray-800 transition duration-200 ${
+                className={`glass-input mt-1 ${
                   confirmPasswordError && "border-red-500"
                 }`}
                 placeholder="Confirm your Password"
@@ -330,9 +327,15 @@ const DiagnosticRegistry = () => {
           <button
             type="button"
             onClick={handleRegister}
-            className="py-3 px-4 bg-teal-500 text-white rounded-md font-medium hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
+            disabled={isLoading}
+            className="py-3 px-4 bg-teal-500 text-white rounded-md font-medium hover:bg-gray-600 disabled:bg-teal-500/40 disabled:cursor-not-allowed focus:outline-none flex items-center gap-2"
           >
-            Register
+            {isLoading ? (
+              <>
+                <span className="spinner" />
+                Registering...
+              </>
+            ) : "Register"}
           </button>
           <button
             onClick={cancelOperation}

@@ -35,9 +35,6 @@ import DoctorViewPatientRecords from "./components/DoctorViewPatientRecords";
 import ViewDiagnosticProfile from "./components/ViewDiagnosticProfile";
 import DiagnosticForm from "./components/DiagnosticForm";
 
-// Layout
-import Footer from "./components/Footer";
-
 const BrowseRouter = () => {
   return (
     <BrowserRouter>
@@ -45,6 +42,7 @@ const BrowseRouter = () => {
         {/* Public Routes */}
         <Route path="/" element={<LandingPage />} />
         <Route path="/about" element={<AboutUs />} />
+        <Route path="/AboutPage" element={<AboutUs />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
 
@@ -75,7 +73,6 @@ const BrowseRouter = () => {
         <Route path="/diagnostic/:hhNumber/viewdiagnosticprofile" element={<ViewDiagnosticProfile />} />
         <Route path="/diagnostic/:hhNumber/diagnosticform" element={<DiagnosticForm />} />
       </Routes>
-      <Footer />
     </BrowserRouter>
   );
 };

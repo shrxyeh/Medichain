@@ -284,20 +284,20 @@ const DiagnosticForm = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-black to-gray-800">
+    <div className="min-h-screen bg-gradient-to-br from-dark-950 via-dark-900 to-dark-800">
       <NavBar_Logout />
 
       <div className="pt-24 pb-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto">
           {/* Header */}
-          <div className="text-center mb-8">
-            <h2 className="text-3xl sm:text-4xl font-bold text-white">
+          <div className="mb-8">
+            <h2 className="text-3xl font-bold text-white">
               Create Lab Report
             </h2>
           </div>
 
           {/* Form */}
-          <div className="bg-gray-900 rounded-2xl p-8 border border-gray-700">
+          <div className="glass-card rounded-2xl p-8">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               {/* Record ID (Auto-generated) */}
               <div className="form-group">
@@ -313,7 +313,7 @@ const DiagnosticForm = () => {
                   value={doctorName}
                   onChange={(e) => setDoctorName(e.target.value)}
                   placeholder="Enter doctor's name"
-                  className="w-full px-4 py-3 rounded-lg text-white bg-gray-700 border border-gray-600 focus:border-teal-500 focus:outline-none transition-colors"
+                  className="glass-input"
                 />
               </div>
 
@@ -325,7 +325,7 @@ const DiagnosticForm = () => {
                   value={patientName}
                   onChange={(e) => setPatientName(e.target.value)}
                   placeholder="Patient name"
-                  className="w-full px-4 py-3 rounded-lg text-white bg-gray-700 border border-gray-600 focus:border-teal-500 focus:outline-none transition-colors"
+                  className="glass-input"
                   readOnly={patientVerified}
                 />
               </div>
@@ -338,7 +338,7 @@ const DiagnosticForm = () => {
                   value={age}
                   onChange={(e) => setAge(e.target.value)}
                   placeholder="Age"
-                  className="w-full px-4 py-3 rounded-lg text-white bg-gray-700 border border-gray-600 focus:border-teal-500 focus:outline-none transition-colors"
+                  className="glass-input"
                   readOnly={patientVerified}
                 />
               </div>
@@ -349,7 +349,7 @@ const DiagnosticForm = () => {
                 <select
                   value={gender}
                   onChange={(e) => setGender(e.target.value)}
-                  className="w-full px-4 py-3 rounded-lg text-white bg-gray-700 border border-gray-600 focus:border-teal-500 focus:outline-none transition-colors"
+                  className="glass-input"
                   disabled={patientVerified}
                 >
                   <option value="">Select Gender</option>
@@ -365,7 +365,7 @@ const DiagnosticForm = () => {
                 <select
                   value={bloodGroup}
                   onChange={(e) => setBloodGroup(e.target.value)}
-                  className="w-full px-4 py-3 rounded-lg text-white bg-gray-700 border border-gray-600 focus:border-teal-500 focus:outline-none transition-colors"
+                  className="glass-input"
                   disabled={patientVerified}
                 >
                   <option value="">Select Blood Group</option>
@@ -383,7 +383,7 @@ const DiagnosticForm = () => {
                   value={patientWallet}
                   onChange={(e) => setPatientWallet(e.target.value)}
                   placeholder="0x..."
-                  className="w-full px-4 py-3 rounded-lg text-white bg-gray-700 border border-gray-600 focus:border-teal-500 focus:outline-none transition-colors font-mono text-sm"
+                  className="glass-input font-mono text-sm"
                   readOnly={patientVerified}
                 />
               </div>
@@ -395,7 +395,7 @@ const DiagnosticForm = () => {
                   type="text"
                   value={diagnosticWallet}
                   readOnly
-                  className="w-full px-4 py-3 rounded-lg text-white bg-gray-600 border border-gray-600 font-mono text-sm cursor-not-allowed"
+                  className="glass-input font-mono text-sm cursor-not-allowed opacity-60"
                 />
               </div>
 
@@ -432,7 +432,7 @@ const DiagnosticForm = () => {
                       value={patientHhNumber}
                       onChange={(e) => setPatientHhNumber(e.target.value)}
                       placeholder="Enter patient HH number"
-                      className="flex-1 px-4 py-3 rounded-lg text-white bg-gray-700 border border-gray-600 focus:border-teal-500 focus:outline-none transition-colors"
+                      className="glass-input flex-1"
                     />
                   </div>
                 </div>
@@ -446,7 +446,7 @@ const DiagnosticForm = () => {
                   <span>Creating report...</span>
                   <span>{uploadProgress}%</span>
                 </div>
-                <div className="w-full bg-gray-700 rounded-full h-2">
+                <div className="w-full bg-white/10 rounded-full h-2">
                   <div
                     className="bg-gradient-to-r from-teal-500 to-cyan-500 h-2 rounded-full transition-all duration-300"
                     style={{ width: `${uploadProgress}%` }}

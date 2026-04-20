@@ -1,7 +1,3 @@
-/**
- * ZKVerificationModal Component
- * Displays Zero Knowledge proof verification UI
- */
 
 import React, { useState, useEffect } from 'react';
 import { useSecurityContext } from '../context/SecurityContext';

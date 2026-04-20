@@ -1,7 +1,3 @@
-/**
- * MediChain Logo Component
- * SVG-based logo with blockchain + medical theme
- */
 
 import React from 'react';
 

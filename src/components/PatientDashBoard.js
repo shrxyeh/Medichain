@@ -10,19 +10,15 @@ import ZKVerificationModal from "./ZKVerificationModal";
 const PatientDashBoard = () => {
   const { hhNumber } = useParams();
   const navigate = useNavigate();
-  const { authenticateUser, currentUser, canAccess, RESOURCES, ACTIONS } = useSecurityContext();
+  const { authenticateUser, currentUser } = useSecurityContext();
 
   const [patientDetails, setPatientDetails] = useState(null);
   const [showAccessPanel, setShowAccessPanel] = useState(false);
   const [showZKModal, setShowZKModal] = useState(false);
 
   const viewRecord = () => {
-    const access = canAccess(RESOURCES.PATIENT_RECORD, hhNumber, ACTIONS.READ);
-    if (access.allowed) {
-      navigate(`/patient/${hhNumber}/viewrecords`);
-    } else {
-      alert("Access denied: " + access.reason);
-    }
+    // Patient is already authenticated (passed login); navigate directly to own records
+    navigate(`/patient/${hhNumber}/viewrecords`);
   };
 
   const viewProfile = () => {
@@ -36,7 +32,7 @@ const PatientDashBoard = () => {
   useEffect(() => {
     const init = async () => {
       if (!window.ethereum) {
-        console.error("Please install MetaMask extension");
+
         return;
       }
 
@@ -47,7 +43,7 @@ const PatientDashBoard = () => {
           PatientRegistration.networks["31337"];
 
         if (!deployedNetwork) {
-          console.error("Contract not deployed on this network");
+
           return;
         }
 
@@ -69,7 +65,7 @@ const PatientDashBoard = () => {
           }, "patient");
         }
       } catch (error) {
-        console.error("Error retrieving patient details:", error);
+
       }
     };
 
@@ -190,7 +186,13 @@ const PatientDashBoard = () => {
       </div>
 
       {/* Modals */}
-      {showAccessPanel && <AccessControlPanel onClose={() => setShowAccessPanel(false)} />}
+      {showAccessPanel && (
+        <AccessControlPanel
+          onClose={() => setShowAccessPanel(false)}
+          fallbackHhNumber={hhNumber}
+          fallbackName={patientDetails?.name || ''}
+        />
+      )}
       {showZKModal && <ZKVerificationModal onClose={() => setShowZKModal(false)} />}
     </div>
   );

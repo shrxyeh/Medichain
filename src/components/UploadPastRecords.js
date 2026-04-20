@@ -3,7 +3,7 @@ import Web3 from "web3";
 import { useParams, useNavigate } from "react-router-dom";
 import NavBar_Logout from "./NavBar_Logout";
 import MedicalRecords from "../build/contracts/MedicalRecords.json";
-import { uploadToIPFS, checkIPFSConnection } from "../utils/ipfsClient";
+import { uploadToIPFS, checkIPFSConnection, IPFS_DEV_MODE } from "../utils/ipfsClient";
 
 const UploadPastRecords = () => {
   const { hhNumber } = useParams();
@@ -195,30 +195,37 @@ const UploadPastRecords = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-black to-gray-800">
+    <div className="min-h-screen bg-gradient-to-br from-dark-950 via-dark-900 to-dark-800">
       <NavBar_Logout />
 
       <div className="pt-24 pb-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-2xl mx-auto">
           {/* Header */}
-          <div className="text-center mb-8">
-            <h2 className="text-3xl sm:text-4xl font-bold mb-2 text-teal-400">
-              Upload your Past Records
+          <div className="mb-8">
+            <h2 className="text-3xl font-bold text-white">
+              Upload Medical Records
             </h2>
             <p className="text-gray-400">
               Securely store your medical records on IPFS
             </p>
           </div>
 
+          {/* Dev mode notice */}
+          {IPFS_DEV_MODE && (
+            <div className="mb-6 px-4 py-3 rounded-xl bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 text-sm">
+              IPFS dev mode active — files are stored locally in your browser. Set <span className="font-mono text-xs bg-white/5 px-1 rounded">REACT_APP_WEB3_STORAGE_TOKEN</span> in <span className="font-mono text-xs bg-white/5 px-1 rounded">.env</span> to enable real IPFS uploads.
+            </div>
+          )}
+
           {/* Connection Status */}
           <div className="flex justify-center gap-4 mb-8">
             <div className={`flex items-center gap-2 px-4 py-2 rounded-lg ${
-              ipfsConnected ? 'bg-green-900/50 text-green-400 border border-green-700' : 'bg-red-900/50 text-red-400 border border-red-700'
+              IPFS_DEV_MODE ? 'bg-yellow-900/50 text-yellow-400 border border-yellow-700' : ipfsConnected ? 'bg-green-900/50 text-green-400 border border-green-700' : 'bg-red-900/50 text-red-400 border border-red-700'
             }`}>
               <span className={`w-2 h-2 rounded-full ${
-                ipfsConnected ? 'bg-green-400' : 'bg-red-400'
+                IPFS_DEV_MODE ? 'bg-yellow-400' : ipfsConnected ? 'bg-green-400' : 'bg-red-400'
               }`} />
-              IPFS {ipfsConnected ? 'Connected' : 'Disconnected'}
+              IPFS {IPFS_DEV_MODE ? 'Dev Mode' : ipfsConnected ? 'Connected' : 'Disconnected'}
             </div>
             <div className={`flex items-center gap-2 px-4 py-2 rounded-lg ${
               contractReady ? 'bg-green-900/50 text-green-400 border border-green-700' : 'bg-yellow-900/50 text-yellow-400 border border-yellow-700'
@@ -231,7 +238,7 @@ const UploadPastRecords = () => {
           </div>
 
           {/* Upload Form */}
-          <div className="bg-gray-900 rounded-2xl p-8 border border-gray-700">
+          <div className="glass-card rounded-2xl p-8">
             {/* File Input */}
             <div className="mb-6">
               <label className="block font-bold text-white mb-2">Select File</label>
@@ -262,7 +269,7 @@ const UploadPastRecords = () => {
               <select
                 value={recordType}
                 onChange={(e) => setRecordType(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl text-white bg-gray-700 border border-gray-600 focus:border-teal-500 focus:outline-none transition-colors"
+                className="glass-input"
               >
                 {RECORD_TYPES.map((type) => (
                   <option key={type.value} value={type.value}>
@@ -280,7 +287,7 @@ const UploadPastRecords = () => {
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Brief description of the record..."
                 rows={3}
-                className="w-full px-4 py-3 rounded-xl text-white bg-gray-700 border border-gray-600 focus:border-teal-500 focus:outline-none transition-colors resize-none"
+                className="glass-input resize-none"
               />
             </div>
 
@@ -291,7 +298,7 @@ const UploadPastRecords = () => {
                   <span>Uploading...</span>
                   <span>{uploadProgress}%</span>
                 </div>
-                <div className="w-full bg-gray-700 rounded-full h-2">
+                <div className="w-full bg-white/10 rounded-full h-2">
                   <div
                     className="bg-gradient-to-r from-teal-500 to-cyan-500 h-2 rounded-full transition-all duration-300"
                     style={{ width: `${uploadProgress}%` }}
