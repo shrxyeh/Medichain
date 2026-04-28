@@ -6,8 +6,6 @@ import NavBar from "./NavBar";
 import { hashPassword } from "../utils/hashPassword";
 
 const DoctorRegistry = () => {
-  const [web3, setWeb3] = useState(null);
-  const [contract, setContract] = useState(null);
   const [doctorAddress, setDoctorAddress] = useState("");
   const [doctorName, setDoctorName] = useState("");
   const [hospitalName, setHospitalName] = useState("");
@@ -40,7 +38,6 @@ const DoctorRegistry = () => {
         const web3Instance = new Web3(window.ethereum);
         try {
           await window.ethereum.request({ method: "eth_requestAccounts" });
-          setWeb3(web3Instance);
 
           const accounts = await web3Instance.eth.getAccounts();
           if (accounts.length > 0) {
@@ -52,13 +49,6 @@ const DoctorRegistry = () => {
           const deployedNetwork =
             DoctorRegistration.networks[networkIdStr] ||
             DoctorRegistration.networks["31337"];
-          if (!deployedNetwork) return;
-          const contractInstance = new web3Instance.eth.Contract(
-            DoctorRegistration.abi,
-            deployedNetwork.address
-          );
-
-          setContract(contractInstance);
         } catch (error) {
           setFormError("Failed to connect to MetaMask: " + error.message);
         }
