@@ -97,7 +97,6 @@ const DiagnosticForm = () => {
             setError("Contracts not deployed. Please deploy contracts first.");
           }
         } catch (err) {
-          console.error("Initialization error:", err);
           setError("Failed to connect to blockchain: " + err.message);
         }
       } else {
@@ -151,7 +150,6 @@ const DiagnosticForm = () => {
       setPatientVerified(true);
       setError(null);
     } catch (err) {
-      console.error("Patient verification failed:", err);
       setError("Failed to verify patient: " + err.message);
       setPatientVerified(false);
     } finally {
@@ -264,7 +262,6 @@ const DiagnosticForm = () => {
       }, 3000);
 
     } catch (err) {
-      console.error("Failed to create lab report:", err);
       setError(err.message || "Failed to create lab report");
     } finally {
       setUploading(false);

@@ -13,6 +13,7 @@ const PatientDashBoard = () => {
   const { authenticateUser, currentUser } = useSecurityContext();
 
   const [patientDetails, setPatientDetails] = useState(null);
+  const [loadError, setLoadError] = useState(null);
   const [showAccessPanel, setShowAccessPanel] = useState(false);
   const [showZKModal, setShowZKModal] = useState(false);
 
@@ -65,7 +66,7 @@ const PatientDashBoard = () => {
           }, "patient");
         }
       } catch (error) {
-
+        setLoadError("Failed to load patient data. Please refresh.");
       }
     };
 
@@ -106,6 +107,9 @@ const PatientDashBoard = () => {
             </p>
           )}
           <p className="text-sm text-gray-500 mt-2">ID: {hhNumber}</p>
+          {loadError && (
+            <p className="text-red-400 text-sm mt-3">{loadError}</p>
+          )}
         </div>
 
         {/* Dashboard Cards */}

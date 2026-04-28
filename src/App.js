@@ -1,11 +1,14 @@
 import BrowseRouter from "./BrowseRouter";
 import { SecurityProvider } from "./context/SecurityContext";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 function App() {
   return (
-    <SecurityProvider>
-      <BrowseRouter />
-    </SecurityProvider>
+    <ErrorBoundary>
+      <SecurityProvider>
+        <BrowseRouter />
+      </SecurityProvider>
+    </ErrorBoundary>
   );
 }
 

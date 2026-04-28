@@ -48,7 +48,7 @@ const ConnectWallet = ({ onConnect, compact = false }) => {
           if (onConnect) onConnect(accounts[0]);
         }
       } catch (err) {
-        console.error('Error checking connection:', err);
+        // silently ignore — no account connected yet
       }
     }
   };
@@ -67,7 +67,7 @@ const ConnectWallet = ({ onConnect, compact = false }) => {
         setError('Please switch to Anvil network (Chain ID: 31337)');
       }
     } catch (err) {
-      console.error('Error checking network:', err);
+      // ignore network check errors silently
     }
   };
 
@@ -99,7 +99,6 @@ const ConnectWallet = ({ onConnect, compact = false }) => {
         setError('Connection rejected by user');
       } else {
         setError('Failed to connect wallet');
-        console.error('Connection error:', err);
       }
     } finally {
       setIsConnecting(false);
@@ -130,7 +129,7 @@ const ConnectWallet = ({ onConnect, compact = false }) => {
             }],
           });
         } catch (addError) {
-          console.error('Error adding network:', addError);
+          // ignore — user denied network addition
         }
       }
     }

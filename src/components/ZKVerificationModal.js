@@ -40,7 +40,6 @@ const ZKVerificationModal = ({ onClose, onVerify }) => {
         onVerify(proof);
       }
     } catch (error) {
-      console.error('Proof generation failed:', error);
       setVerificationStatus('failed');
     }
   };

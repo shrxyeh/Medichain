@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSecurityContext } from "../context/SecurityContext";
 import Logo from "./Logo";
@@ -6,6 +6,7 @@ import Logo from "./Logo";
 const NavBar_Logout = () => {
   const navigate = useNavigate();
   const { logout, currentUser } = useSecurityContext();
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -47,7 +48,7 @@ const NavBar_Logout = () => {
               </div>
             )}
             <button
-              onClick={handleLogout}
+              onClick={() => setShowConfirm(true)}
               className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 hover:bg-red-500/20 border border-white/10 hover:border-red-500/30 text-gray-300 hover:text-red-400 transition-all duration-300"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -58,6 +59,35 @@ const NavBar_Logout = () => {
           </div>
         </div>
       </div>
+
+      {/* Logout Confirmation Modal */}
+      {showConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="glass-card rounded-2xl p-8 max-w-sm w-full mx-4 text-center">
+            <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-red-500/20 flex items-center justify-center">
+              <svg className="w-7 h-7 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-bold text-white mb-2">Sign Out?</h3>
+            <p className="text-gray-400 text-sm mb-6">Your session will be ended and you'll be returned to the home screen.</p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowConfirm(false)}
+                className="btn-secondary flex-1 py-2.5"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleLogout}
+                className="flex-1 py-2.5 rounded-xl bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 text-red-400 font-medium transition-all"
+              >
+                Sign Out
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </nav>
   );
 };

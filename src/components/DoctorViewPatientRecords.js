@@ -24,6 +24,7 @@ const DoctorViewPatientRecords = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [hasPermission, setHasPermission] = useState(false);
+  const [refreshCount, setRefreshCount] = useState(0);
   const [web3, setWeb3] = useState(null);
   const [patientContract, setPatientContract] = useState(null);
   const [medicalContract, setMedicalContract] = useState(null);
@@ -118,7 +119,7 @@ const DoctorViewPatientRecords = () => {
     };
 
     init();
-  }, [hhNumber, patientHhNumber]);
+  }, [hhNumber, patientHhNumber, refreshCount]);
 
   const fetchRecords = async (contractInstance) => {
     try {
@@ -206,13 +207,26 @@ const DoctorViewPatientRecords = () => {
 
       <div className="pt-24 pb-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto">
-          <div className="mb-8">
-            <h2 className="text-3xl font-bold text-white">Patient Records</h2>
-            {patientDetails && (
-              <p className="text-gray-400 mt-1 text-sm">
-                {patientDetails.name} · HH: {patientHhNumber}
-              </p>
-            )}
+          <div className="mb-8 flex items-start justify-between">
+            <div>
+              <h2 className="text-3xl font-bold text-white">Patient Records</h2>
+              {patientDetails && (
+                <p className="text-gray-400 mt-1 text-sm">
+                  {patientDetails.name} · HH: {patientHhNumber}
+                </p>
+              )}
+            </div>
+            <button
+              onClick={() => { setLoading(true); setError(null); setRefreshCount(c => c + 1); }}
+              disabled={loading}
+              className="btn-secondary px-4 py-2 text-sm flex items-center gap-2 disabled:opacity-50"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              Refresh
+            </button>
           </div>
 
           {loading && (

@@ -65,7 +65,7 @@ const PatientRegistry = () => {
 
         setContract(contractInstance);
       } catch (error) {
-        console.error("Error initializing contract:", error);
+        setFormError("Failed to initialize contract: " + error.message);
       }
     }
   };

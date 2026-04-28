@@ -73,7 +73,6 @@ const UploadPastRecords = () => {
             setError("MedicalRecords contract not deployed on this network. Please deploy the contract first.");
           }
         } catch (err) {
-          console.error("Initialization error:", err);
           setError("Failed to connect to wallet: " + err.message);
         }
       } else {
@@ -183,7 +182,6 @@ const UploadPastRecords = () => {
       if (fileInput) fileInput.value = "";
 
     } catch (err) {
-      console.error("Upload failed:", err);
       setError(err.message || "Upload failed. Please try again.");
     } finally {
       setUploading(false);

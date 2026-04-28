@@ -2,6 +2,8 @@ import React, { createContext, useContext, useState, useCallback, useEffect } fr
 import zkProofs from '../utils/zkProofs';
 import abacEngine, { ROLES, RESOURCES, ACTIONS, SENSITIVITY } from '../utils/abacEngine';
 
+const SESSION_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
+
 const SecurityContext = createContext(null);
 
 export const useSecurityContext = () => {
@@ -16,12 +18,39 @@ export const SecurityProvider = ({ children }) => {
   const [permissions, setPermissions] = useState({});
   const [accessLog, setAccessLog] = useState([]);
 
+  const logout = useCallback(() => {
+    setCurrentUser(null);
+    setUserProofs({});
+    setPermissions({});
+    localStorage.removeItem('sehr_current_user');
+  }, []);
+
+  // Restore session from localStorage on mount (skip if expired)
   useEffect(() => {
     const saved = localStorage.getItem('sehr_current_user');
     if (saved) {
-      try { setCurrentUser(JSON.parse(saved)); } catch (e) {}
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed.authenticatedAt && Date.now() - parsed.authenticatedAt < SESSION_TIMEOUT_MS) {
+          setCurrentUser(parsed);
+        } else {
+          localStorage.removeItem('sehr_current_user');
+        }
+      } catch (e) {}
     }
   }, []);
+
+  // Auto-logout after 30-minute session age
+  useEffect(() => {
+    if (!currentUser?.authenticatedAt) return;
+    const remaining = SESSION_TIMEOUT_MS - (Date.now() - currentUser.authenticatedAt);
+    if (remaining <= 0) {
+      logout();
+      return;
+    }
+    const timer = setTimeout(() => logout(), remaining);
+    return () => clearTimeout(timer);
+  }, [currentUser, logout]);
 
   // Generates ZK role proof + attribute commitments on login
   const authenticateUser = useCallback(async (userData, role) => {
@@ -42,13 +71,6 @@ export const SecurityProvider = ({ children }) => {
     localStorage.setItem('sehr_current_user', JSON.stringify(user));
 
     return { user, proofs: { roleProof, ...attributeCommitments } };
-  }, []);
-
-  const logout = useCallback(() => {
-    setCurrentUser(null);
-    setUserProofs({});
-    setPermissions({});
-    localStorage.removeItem('sehr_current_user');
   }, []);
 
   const canAccess = useCallback((resourceType, resourceOwnerId, action, options = {}) => {

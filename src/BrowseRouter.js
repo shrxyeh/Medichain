@@ -35,6 +35,9 @@ import DoctorViewPatientRecords from "./components/DoctorViewPatientRecords";
 import ViewDiagnosticProfile from "./components/ViewDiagnosticProfile";
 import DiagnosticForm from "./components/DiagnosticForm";
 
+// Utility Pages
+import NotFoundPage from "./components/NotFoundPage";
+
 const BrowseRouter = () => {
   return (
     <BrowserRouter>
@@ -72,6 +75,9 @@ const BrowseRouter = () => {
         <Route path="/diagnostic/:hhNumber" element={<DiagnosticDashBoard />} />
         <Route path="/diagnostic/:hhNumber/viewdiagnosticprofile" element={<ViewDiagnosticProfile />} />
         <Route path="/diagnostic/:hhNumber/diagnosticform" element={<DiagnosticForm />} />
+
+        {/* 404 Fallback */}
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </BrowserRouter>
   );
