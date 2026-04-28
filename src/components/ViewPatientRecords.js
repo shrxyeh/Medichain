@@ -95,25 +95,34 @@ const ViewPatientRecords = () => {
   };
 
   const openRecord = (record) => {
-    const url = getIPFSUrl(record.ipfsCID);
+    const cid = record.ipfsCID;
+
+    // Check localStorage first (dev mode files are stored here)
+    const localData = localStorage.getItem(`ipfs_${cid}`);
+    if (localData) {
+      try {
+        const { dataUrl } = JSON.parse(localData);
+        if (dataUrl) {
+          const [header, base64] = dataUrl.split(',');
+          const mimeType = header.split(':')[1].split(';')[0];
+          const bytes = atob(base64);
+          const arr = new Uint8Array(bytes.length);
+          for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
+          const blob = new Blob([arr], { type: mimeType });
+          window.open(URL.createObjectURL(blob), '_blank');
+          return;
+        }
+      } catch (e) {}
+    }
+
+    // Not in localStorage — try real IPFS gateway
+    const url = getIPFSUrl(cid);
     if (!url) {
-      setError("File not available — it was stored in dev-mode localStorage which has since been cleared. Re-upload the record to view it.");
+      setError("File not available. Please re-upload the record.");
       return;
     }
 
-    // data: URLs can't render PDFs directly in Chrome/Brave — convert to blob URL first
-    if (url.startsWith('data:')) {
-      const [header, base64] = url.split(',');
-      const mimeType = header.split(':')[1].split(';')[0];
-      const bytes = atob(base64);
-      const arr = new Uint8Array(bytes.length);
-      for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
-      const blob = new Blob([arr], { type: mimeType });
-      const blobUrl = URL.createObjectURL(blob);
-      window.open(blobUrl, '_blank');
-    } else {
-      window.open(url, '_blank');
-    }
+    window.open(url, '_blank');
   };
 
   const formatDate = (date) => {
