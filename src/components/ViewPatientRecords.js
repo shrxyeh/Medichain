@@ -130,6 +130,22 @@ const ViewPatientRecords = () => {
     });
   };
 
+  const RECORD_TYPE_LABELS = {
+    0: "Medical Report",
+    1: "Lab Report",
+    2: "Prescription",
+    3: "Imaging",
+    4: "Consultation",
+  };
+
+  const RECORD_TYPE_COLORS = {
+    0: "bg-blue-500/20 text-blue-400",
+    1: "bg-purple-500/20 text-purple-400",
+    2: "bg-green-500/20 text-green-400",
+    3: "bg-orange-500/20 text-orange-400",
+    4: "bg-teal-500/20 text-teal-400",
+  };
+
   const goBack = () => {
     navigate(`/patient/${hhNumber}`);
   };
@@ -190,8 +206,16 @@ const ViewPatientRecords = () => {
                     }`}
                   >
                     <div>
-                      <p className="text-white font-medium text-sm">Record #{record.id}</p>
-                      <p className="text-gray-500 text-xs mt-0.5">Uploaded: {formatDate(record.uploadedAt)}</p>
+                      <div className="flex items-center gap-2 mb-1">
+                        <p className="text-white font-medium text-sm">Record #{record.id}</p>
+                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${RECORD_TYPE_COLORS[record.recordType] || "bg-gray-500/20 text-gray-400"}`}>
+                          {RECORD_TYPE_LABELS[record.recordType] || "Unknown"}
+                        </span>
+                      </div>
+                      <p className="text-gray-500 text-xs">{formatDate(record.uploadedAt)}</p>
+                      {record.metadata?.filename && (
+                        <p className="text-gray-600 text-xs mt-0.5 truncate max-w-xs">{record.metadata.filename}</p>
+                      )}
                     </div>
                     <button onClick={() => openRecord(record)} className="btn-primary px-4 py-2 text-sm">
                       View

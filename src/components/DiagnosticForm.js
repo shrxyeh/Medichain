@@ -119,7 +119,7 @@ const DiagnosticForm = () => {
 
     try {
       const isRegistered = await patientContract.methods
-        .isRegisteredPatient(patientHhNumber)
+        .isRegisteredPatient(patientHhNumber.trim())
         .call();
 
       if (!isRegistered) {
@@ -130,7 +130,7 @@ const DiagnosticForm = () => {
       }
 
       const details = await patientContract.methods
-        .getPatientDetails(patientHhNumber)
+        .getPatientDetails(patientHhNumber.trim())
         .call();
 
       setPatientName(details.name);
@@ -223,9 +223,18 @@ const DiagnosticForm = () => {
       setUploadProgress(60);
 
       // Step 3: Store on blockchain
+      // Fetch fresh accounts in case MetaMask switched since page load
+      const web3Instance = new Web3(window.ethereum);
+      const freshAccounts = await web3Instance.eth.getAccounts();
+      if (!freshAccounts.length) {
+        setError("No MetaMask account connected.");
+        setUploading(false);
+        return;
+      }
+
       const tx = await medicalRecordsContract.methods
         .createLabReport(
-          patientHhNumber,
+          patientHhNumber.trim(),
           doctorName,
           patientName,
           age,
@@ -235,7 +244,7 @@ const DiagnosticForm = () => {
           ipfsResult.cid,
           metadata
         )
-        .send({ from: accounts[0] });
+        .send({ from: freshAccounts[0] });
 
       setUploadProgress(100);
 
