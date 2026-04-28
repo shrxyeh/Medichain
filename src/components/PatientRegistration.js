@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import NavBar from "./NavBar";
 import ConnectWallet from "./ConnectWallet";
 import { hashPassword } from "../utils/hashPassword";
+import { getPendingNonce, isNonceTooLow, NONCE_ERROR_MSG } from "../utils/txUtils";
 
 const PatientRegistry = () => {
   const [name, setName] = useState("");
@@ -131,14 +132,14 @@ const PatientRegistry = () => {
         return;
       }
 
-      const nonce = await web3.eth.getTransactionCount(walletAddress, 'pending');
+      const nonce = await getPendingNonce(walletAddress);
       await contract.methods
         .registerPatient(walletAddress, name, dateOfBirth, gender, bg, homeAddress, email, hhNumber, hashPassword(password))
         .send({ from: walletAddress, nonce });
 
       navigate("/");
     } catch (error) {
-      setFormError("Registration failed. Check MetaMask and try again.");
+      setFormError(isNonceTooLow(error) ? NONCE_ERROR_MSG : "Registration failed. Check MetaMask and try again.");
     } finally {
       setIsLoading(false);
     }

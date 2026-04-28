@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import Web3 from 'web3';
 import DoctorRegistration from '../build/contracts/DoctorRegistration.json';
 import { useSecurityContext } from '../context/SecurityContext';
+import { getPendingNonce, isNonceTooLow, NONCE_ERROR_MSG } from '../utils/txUtils';
 
 const AccessControlPanel = ({ onClose, fallbackHhNumber, fallbackName }) => {
   const {
@@ -73,11 +74,11 @@ const AccessControlPanel = ({ onClose, fallbackHhNumber, fallbackName }) => {
       }
       await contract.methods
         .grantPermission(sessionHhNumber, grantDoctorHH, sessionName)
-        .send({ from: accounts[0], nonce: await web3.eth.getTransactionCount(accounts[0], 'pending') });
+        .send({ from: accounts[0], nonce: await getPendingNonce(accounts[0]) });
       setPermMessage({ type: 'success', text: `Access granted to doctor ${grantDoctorHH}.` });
       setGrantDoctorHH('');
     } catch (e) {
-      setPermMessage({ type: 'error', text: 'Transaction failed. Check MetaMask and try again.' });
+      setPermMessage({ type: 'error', text: isNonceTooLow(e) ? NONCE_ERROR_MSG : 'Transaction failed. Check MetaMask and try again.' });
     } finally {
       setPermLoading(false);
     }
@@ -99,11 +100,11 @@ const AccessControlPanel = ({ onClose, fallbackHhNumber, fallbackName }) => {
       const accounts = await web3.eth.getAccounts();
       await contract.methods
         .revokePermission(sessionHhNumber, revokeDoctorHH)
-        .send({ from: accounts[0], nonce: await web3.eth.getTransactionCount(accounts[0], 'pending') });
+        .send({ from: accounts[0], nonce: await getPendingNonce(accounts[0]) });
       setPermMessage({ type: 'success', text: `Access revoked from doctor ${revokeDoctorHH}.` });
       setRevokeDoctorHH('');
     } catch (e) {
-      setPermMessage({ type: 'error', text: 'Transaction failed. Check MetaMask and try again.' });
+      setPermMessage({ type: 'error', text: isNonceTooLow(e) ? NONCE_ERROR_MSG : 'Transaction failed. Check MetaMask and try again.' });
     } finally {
       setPermLoading(false);
     }

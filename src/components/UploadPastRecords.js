@@ -4,6 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import NavBarLogout from "./NavBar_Logout";
 import MedicalRecords from "../build/contracts/MedicalRecords.json";
 import { uploadToIPFS, checkIPFSConnection, IPFS_DEV_MODE } from "../utils/ipfsClient";
+import { getPendingNonce, isNonceTooLow, NONCE_ERROR_MSG } from "../utils/txUtils";
 
 const UploadPastRecords = () => {
   const { hhNumber } = useParams();
@@ -146,9 +147,7 @@ const UploadPastRecords = () => {
       setUploadProgress(60);
 
       // Step 3: Store CID on blockchain
-      // Fetch current nonce to avoid MetaMask nonce-sync issues after Anvil restarts
-      const web3 = new Web3(window.ethereum);
-      const nonce = await web3.eth.getTransactionCount(accounts[0], 'pending');
+      const nonce = await getPendingNonce(accounts[0]);
 
       let tx;
       if (recordType === "0") {
@@ -182,7 +181,7 @@ const UploadPastRecords = () => {
       if (fileInput) fileInput.value = "";
 
     } catch (err) {
-      setError(err.message || "Upload failed. Please try again.");
+      setError(isNonceTooLow(err) ? NONCE_ERROR_MSG : (err.message || "Upload failed. Please try again."));
     } finally {
       setUploading(false);
     }

@@ -4,6 +4,7 @@ import DiagnosticRegistration from "../build/contracts/DiagnosticRegistration.js
 import { useNavigate } from "react-router-dom";
 import NavBar from "./NavBar";
 import { hashPassword } from "../utils/hashPassword";
+import { getPendingNonce, isNonceTooLow, NONCE_ERROR_MSG } from "../utils/txUtils";
 
 const DiagnosticRegistry = () => {
   const [diagnosticAddress, setDiagnosticAddress] = useState("");
@@ -129,11 +130,11 @@ const DiagnosticRegistry = () => {
 
       await contract.methods
         .registerDiagnostic(diagnosticName, hospitalName, diagnosticLocation, email, hhNumber, hashPassword(password))
-        .send({ from: accounts[0], nonce: await web3.eth.getTransactionCount(accounts[0], 'pending') });
+        .send({ from: accounts[0], nonce: await getPendingNonce(accounts[0]) });
 
       navigate("/");
     } catch (error) {
-      setFormError(error.message || "Registration failed. Check MetaMask and try again.");
+      setFormError(isNonceTooLow(error) ? NONCE_ERROR_MSG : (error.message || "Registration failed. Check MetaMask and try again."));
     } finally {
       setIsLoading(false);
     }

@@ -5,6 +5,7 @@ import NavBarLogout from "./NavBar_Logout";
 import MedicalRecords from "../build/contracts/MedicalRecords.json";
 import PatientRegistration from "../build/contracts/PatientRegistration.json";
 import { uploadToIPFS } from "../utils/ipfsClient";
+import { getPendingNonce, isNonceTooLow, NONCE_ERROR_MSG } from "../utils/txUtils";
 
 // Simple unique ID generator (avoids uuid dependency)
 const generateUniqueId = () => {
@@ -222,8 +223,8 @@ const DiagnosticForm = () => {
         return;
       }
 
-      // Fetch current nonce to avoid MetaMask nonce-sync issues after Anvil restarts
-      const nonce = await web3Instance.eth.getTransactionCount(freshAccounts[0], 'pending');
+      // Query Anvil directly for nonce — MetaMask can cache stale values after a restart
+      const nonce = await getPendingNonce(freshAccounts[0]);
 
       const tx = await medicalRecordsContract.methods
         .createLabReport(
@@ -257,7 +258,7 @@ const DiagnosticForm = () => {
       }, 3000);
 
     } catch (err) {
-      setError(err.message || "Failed to create lab report");
+      setError(isNonceTooLow(err) ? NONCE_ERROR_MSG : (err.message || "Failed to create lab report"));
     } finally {
       setUploading(false);
     }
