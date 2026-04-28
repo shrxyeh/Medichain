@@ -169,7 +169,10 @@ const DoctorViewPatientRecords = () => {
 
   const openRecord = (record) => {
     const url = getIPFSUrl(record.ipfsCID);
-    if (!url) return;
+    if (!url) {
+      setError("File not available — it was stored in dev-mode localStorage which has since been cleared. Ask the patient to re-upload the record.");
+      return;
+    }
 
     if (url.startsWith('data:')) {
       const [header, base64] = url.split(',');

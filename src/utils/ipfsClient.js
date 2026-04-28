@@ -81,6 +81,16 @@ const localStorageSetWithEviction = (key, value) => {
   throw new Error('localStorage quota exceeded — could not free enough space after eviction.');
 };
 
+// Generate a fake CID using only valid base32 characters (a-z, 2-7)
+const generateFakeCid = () => {
+  const alphabet = 'abcdefghijklmnopqrstuvwxyz234567';
+  let result = 'bafybei';
+  for (let i = 0; i < 52; i++) {
+    result += alphabet[Math.floor(Math.random() * alphabet.length)];
+  }
+  return result; // 59 chars total, all valid base32
+};
+
 // Dev mode: store as base64 so it survives page reloads (blob URLs are session-only)
 const createFallbackUpload = async (file) => {
   // base64 inflates by ~33%; cap at 3 MB source to stay safely under the 5 MB quota
@@ -92,10 +102,7 @@ const createFallbackUpload = async (file) => {
     );
   }
 
-  const ts = Date.now().toString(36);
-  const rand = Math.random().toString(36).substring(2, 18);
-  const nameSlug = file.name.replace(/[^a-z0-9]/gi, '').substring(0, 10).toLowerCase();
-  const fakeCid = `bafybei${ts}${rand}${nameSlug}`.substring(0, 59);
+  const fakeCid = generateFakeCid();
 
   const dataUrl = await new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -125,6 +132,9 @@ export const uploadMetadataToIPFS = async (metadata) => {
   return client.put([file]);
 };
 
+// Base32 alphabet used by CIDv1 (bafybei... prefix)
+const BASE32_RE = /^[a-z2-7]+$/;
+
 export const getIPFSUrl = (cid, gatewayIndex = 0) => {
   if (!cid) return null;
 
@@ -135,6 +145,10 @@ export const getIPFSUrl = (cid, gatewayIndex = 0) => {
       return parsed.dataUrl || parsed.blobUrl;
     } catch (e) {}
   }
+
+  // If the CID starts with 'bafybei' but contains non-base32 chars (0,1,8,9...)
+  // it was generated in dev mode and is not a real IPFS CID — data is lost from cache
+  if (cid.startsWith('bafybei') && !BASE32_RE.test(cid)) return null;
 
   if (cid.startsWith('bafybei')) return `https://w3s.link/ipfs/${cid}`;
   return `${IPFS_GATEWAYS[gatewayIndex] || IPFS_GATEWAYS[0]}${cid}`;

@@ -101,7 +101,10 @@ const ViewPatientRecords = () => {
 
   const openRecord = (record) => {
     const url = getIPFSUrl(record.ipfsCID);
-    if (!url) return;
+    if (!url) {
+      setError("File not available — it was stored in dev-mode localStorage which has since been cleared. Re-upload the record to view it.");
+      return;
+    }
 
     // data: URLs can't render PDFs directly in Chrome/Brave — convert to blob URL first
     if (url.startsWith('data:')) {
