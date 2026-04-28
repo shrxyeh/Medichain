@@ -73,7 +73,7 @@ const AccessControlPanel = ({ onClose, fallbackHhNumber, fallbackName }) => {
       }
       await contract.methods
         .grantPermission(sessionHhNumber, grantDoctorHH, sessionName)
-        .send({ from: accounts[0] });
+        .send({ from: accounts[0], nonce: await web3.eth.getTransactionCount(accounts[0], 'pending') });
       setPermMessage({ type: 'success', text: `Access granted to doctor ${grantDoctorHH}.` });
       setGrantDoctorHH('');
     } catch (e) {
@@ -99,7 +99,7 @@ const AccessControlPanel = ({ onClose, fallbackHhNumber, fallbackName }) => {
       const accounts = await web3.eth.getAccounts();
       await contract.methods
         .revokePermission(sessionHhNumber, revokeDoctorHH)
-        .send({ from: accounts[0] });
+        .send({ from: accounts[0], nonce: await web3.eth.getTransactionCount(accounts[0], 'pending') });
       setPermMessage({ type: 'success', text: `Access revoked from doctor ${revokeDoctorHH}.` });
       setRevokeDoctorHH('');
     } catch (e) {

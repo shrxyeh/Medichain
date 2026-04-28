@@ -222,6 +222,9 @@ const DiagnosticForm = () => {
         return;
       }
 
+      // Fetch current nonce to avoid MetaMask nonce-sync issues after Anvil restarts
+      const nonce = await web3Instance.eth.getTransactionCount(freshAccounts[0], 'pending');
+
       const tx = await medicalRecordsContract.methods
         .createLabReport(
           patientHhNumber.trim(),
@@ -234,7 +237,7 @@ const DiagnosticForm = () => {
           ipfsResult.cid,
           metadata
         )
-        .send({ from: freshAccounts[0] });
+        .send({ from: freshAccounts[0], nonce });
 
       setUploadProgress(100);
 

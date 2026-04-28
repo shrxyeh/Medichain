@@ -129,7 +129,7 @@ const DiagnosticRegistry = () => {
 
       await contract.methods
         .registerDiagnostic(diagnosticName, hospitalName, diagnosticLocation, email, hhNumber, hashPassword(password))
-        .send({ from: accounts[0] });
+        .send({ from: accounts[0], nonce: await web3.eth.getTransactionCount(accounts[0], 'pending') });
 
       navigate("/");
     } catch (error) {

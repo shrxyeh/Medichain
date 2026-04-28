@@ -144,7 +144,7 @@ const DoctorRegistry = () => {
           doctorName, hospitalName, dateOfBirth, gender, email, hhNumber,
           specialization, department, designation, workExperience, hashPassword(password)
         )
-        .send({ from: accounts[0] });
+        .send({ from: accounts[0], nonce: await web3.eth.getTransactionCount(accounts[0], 'pending') });
 
       navigate("/");
     } catch (error) {

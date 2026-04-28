@@ -146,17 +146,19 @@ const UploadPastRecords = () => {
       setUploadProgress(60);
 
       // Step 3: Store CID on blockchain
+      // Fetch current nonce to avoid MetaMask nonce-sync issues after Anvil restarts
+      const web3 = new Web3(window.ethereum);
+      const nonce = await web3.eth.getTransactionCount(accounts[0], 'pending');
+
       let tx;
       if (recordType === "0") {
-        // Use uploadPastRecord for past records
         tx = await contract.methods
           .uploadPastRecord(hhNumber, ipfsResult.cid, metadata)
-          .send({ from: accounts[0] });
+          .send({ from: accounts[0], nonce });
       } else {
-        // Use uploadRecord with specific type
         tx = await contract.methods
           .uploadRecord(hhNumber, ipfsResult.cid, parseInt(recordType), metadata)
-          .send({ from: accounts[0] });
+          .send({ from: accounts[0], nonce });
       }
 
       setUploadProgress(100);

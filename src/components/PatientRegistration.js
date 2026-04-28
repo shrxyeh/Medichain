@@ -131,9 +131,10 @@ const PatientRegistry = () => {
         return;
       }
 
+      const nonce = await web3.eth.getTransactionCount(walletAddress, 'pending');
       await contract.methods
         .registerPatient(walletAddress, name, dateOfBirth, gender, bg, homeAddress, email, hhNumber, hashPassword(password))
-        .send({ from: walletAddress });
+        .send({ from: walletAddress, nonce });
 
       navigate("/");
     } catch (error) {
