@@ -42,9 +42,15 @@ const DoctorRegistry = () => {
           await window.ethereum.request({ method: "eth_requestAccounts" });
           setWeb3(web3Instance);
 
+          const accounts = await web3Instance.eth.getAccounts();
+          if (accounts.length > 0) {
+            setDoctorAddress(accounts[0]);
+          }
+
           const networkId = await web3Instance.eth.net.getId();
+          const networkIdStr = networkId.toString();
           const deployedNetwork =
-            DoctorRegistration.networks[networkId] ||
+            DoctorRegistration.networks[networkIdStr] ||
             DoctorRegistration.networks["31337"];
           if (!deployedNetwork) return;
           const contractInstance = new web3Instance.eth.Contract(
@@ -54,14 +60,20 @@ const DoctorRegistry = () => {
 
           setContract(contractInstance);
         } catch (error) {
-
+          setFormError("Failed to connect to MetaMask: " + error.message);
         }
       } else {
-
+        setFormError("Please install MetaMask to use this app.");
       }
     };
 
     init();
+
+    if (window.ethereum) {
+      window.ethereum.on("accountsChanged", (accounts) => {
+        if (accounts.length > 0) setDoctorAddress(accounts[0]);
+      });
+    }
   }, []);
 
   const handleRegister = async () => {
@@ -125,6 +137,12 @@ const DoctorRegistry = () => {
         deployedNetwork.address
       );
 
+      const accounts = await web3.eth.getAccounts();
+      if (!accounts.length) {
+        setFormError("No MetaMask account connected. Please unlock MetaMask.");
+        return;
+      }
+
       const isRegDoc = await contract.methods.isRegisteredDoctor(hhNumber).call();
       if (isRegDoc) {
         setFormError("An account with this HH Number already exists.");
@@ -136,11 +154,11 @@ const DoctorRegistry = () => {
           doctorName, hospitalName, dateOfBirth, gender, email, hhNumber,
           specialization, department, designation, workExperience, hashPassword(password)
         )
-        .send({ from: doctorAddress });
+        .send({ from: accounts[0] });
 
       navigate("/");
     } catch (error) {
-      setFormError("Registration failed. Check MetaMask and try again.");
+      setFormError(error.message || "Registration failed. Check MetaMask and try again.");
     } finally {
       setIsLoading(false);
     }
@@ -229,11 +247,10 @@ const DoctorRegistry = () => {
               id="doctorAddress"
               name="doctorAddress"
               type="text"
-              required
-              className="mt-2 p-2 w-full text-white glass-input"
-              placeholder="Crypto Wallet's Public Address"
+              readOnly
+              className="mt-2 p-2 w-full text-white glass-input opacity-70 cursor-not-allowed"
+              placeholder="Auto-filled from MetaMask..."
               value={doctorAddress}
-              onChange={(e) => setDoctorAddress(e.target.value)}
             />
           </div>
           <div className="mb-4">
