@@ -32,21 +32,16 @@ const PatientDashBoard = () => {
 
   useEffect(() => {
     const init = async () => {
-      if (!window.ethereum) {
-
-        return;
-      }
+      if (!window.ethereum) return;
 
       try {
         const web3Instance = new Web3(window.ethereum);
         const networkId = await web3Instance.eth.net.getId();
-        const deployedNetwork = PatientRegistration.networks[networkId] ||
+        const networkIdStr = networkId.toString();
+        const deployedNetwork = PatientRegistration.networks[networkIdStr] ||
           PatientRegistration.networks["31337"];
 
-        if (!deployedNetwork) {
-
-          return;
-        }
+        if (!deployedNetwork) return;
 
         const contractInstance = new web3Instance.eth.Contract(
           PatientRegistration.abi,
@@ -56,7 +51,8 @@ const PatientDashBoard = () => {
         const result = await contractInstance.methods.getPatientDetails(hhNumber).call();
         setPatientDetails(result);
 
-        if (result && !currentUser) {
+        // ZK setup — isolated so a proof failure doesn't break the dashboard
+        try {
           await authenticateUser({
             hhNumber,
             name: result.name,
@@ -64,14 +60,15 @@ const PatientDashBoard = () => {
             bloodGroup: result.bloodGroup,
             gender: result.gender,
           }, "patient");
-        }
+        } catch (_) {}
       } catch (error) {
         setLoadError("Failed to load patient data. Please refresh.");
       }
     };
 
     init();
-  }, [hhNumber, authenticateUser, currentUser]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hhNumber]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-dark-950 via-dark-900 to-dark-800">

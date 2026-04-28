@@ -27,21 +27,16 @@ const DoctorDashBoard = () => {
 
   useEffect(() => {
     const init = async () => {
-      if (!window.ethereum) {
-
-        return;
-      }
+      if (!window.ethereum) return;
 
       try {
         const web3Instance = new Web3(window.ethereum);
         const networkId = await web3Instance.eth.net.getId();
-        const deployedNetwork = DoctorRegistration.networks[networkId] ||
+        const networkIdStr = networkId.toString();
+        const deployedNetwork = DoctorRegistration.networks[networkIdStr] ||
           DoctorRegistration.networks["31337"];
 
-        if (!deployedNetwork) {
-
-          return;
-        }
+        if (!deployedNetwork) return;
 
         const contractInstance = new web3Instance.eth.Contract(
           DoctorRegistration.abi,
@@ -51,20 +46,22 @@ const DoctorDashBoard = () => {
         const result = await contractInstance.methods.getDoctorDetails(hhNumber).call();
         setDoctorDetails(result);
 
-        if (result && !currentUser) {
+        // ZK setup — isolated so a proof failure doesn't break the dashboard
+        try {
           await authenticateUser({
             hhNumber,
             name: result[1],
             specialization: result[6],
           }, "doctor");
-        }
+        } catch (_) {}
       } catch (error) {
         setLoadError("Failed to load doctor data. Please refresh.");
       }
     };
 
     init();
-  }, [hhNumber, authenticateUser, currentUser]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hhNumber]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-dark-950 via-dark-900 to-dark-800">
