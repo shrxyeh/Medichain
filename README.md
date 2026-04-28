@@ -11,7 +11,7 @@ Patients decide who can access their records, for how long, and can revoke acces
 ### Patient Portal
 - Register with a full health profile (name, DOB, gender, blood group, address)
 - Upload past medical records to IPFS
-- View all medical records with document retrieval
+- View all medical records with type badges, filename, and one-click refresh
 - Grant and revoke doctor access directly from the Access Control Panel (on-chain)
 - Access Control Panel — Permissions tab (grant/revoke), active policies, and audit history
 - ZK Verification — view cryptographic proof status for session attributes
@@ -19,7 +19,7 @@ Patients decide who can access their records, for how long, and can revoke acces
 ### Doctor Portal
 - Register with medical credentials (hospital, specialization, department, designation, experience)
 - View patients who have granted access
-- View individual patient records (ABAC-enforced)
+- View individual patient records (ABAC-enforced) with one-click refresh
 - Write private consultation notes per patient (stored locally)
 - Time-limited access that auto-expires
 
@@ -35,6 +35,8 @@ Patients decide who can access their records, for how long, and can revoke acces
 - **Immutable audit trail** — every access attempt logged on-chain
 - **Time-bound permissions** — automatic expiration on access grants
 - **Emergency access** — 24-hour auto-expiring override (contract-level)
+- **30-minute session expiry** — auto-logout after 30 minutes; expired sessions are not restored on reload
+- **Logout confirmation** — modal dialog prevents accidental sign-out
 
 ---
 
@@ -180,16 +182,18 @@ ehr/
 │   ├── deploy-contracts.js
 │   └── generate-abis.js
 ├── src/
-│   ├── components/             # React components (29)
+│   ├── components/             # React components (31)
 │   │   ├── LandingPage_1.js    # Public landing page
 │   │   ├── AboutPage.js        # About page
 │   │   ├── LoginPage.js        # Role selection for login
 │   │   ├── RegisterPage.js     # Role selection for registration
 │   │   ├── NavBar.js           # Public navigation
-│   │   ├── NavBar_Logout.js    # Authenticated navigation
+│   │   ├── NavBar_Logout.js    # Authenticated navigation (with logout confirmation)
 │   │   ├── Footer.js           # Site footer
 │   │   ├── Logo.js             # SVG logo component
 │   │   ├── ConnectWallet.js    # MetaMask wallet connection
+│   │   ├── ErrorBoundary.js    # React error boundary — catches crashes, shows recovery UI
+│   │   ├── NotFoundPage.js     # 404 page for unmatched routes
 │   │   ├── PatientLogin.js     # Patient sign-in
 │   │   ├── DoctorLogin.js      # Doctor sign-in
 │   │   ├── DiagnosticLogin.js  # Diagnostic center sign-in
@@ -263,6 +267,8 @@ ehr/
 - **IPFS CIDs** are stored on-chain; the actual files live on IPFS. If a file is tampered with, the hash won't match the stored CID.
 - **Permissions** are stored and enforced entirely on-chain — no backend can override them.
 - **Audit logs** are immutable once written to the chain.
+- **Session lifetime** is capped at 30 minutes. `SecurityContext` schedules an auto-logout timer on login and rejects expired sessions on page reload.
+- **Logout confirmation** modal prevents accidental sign-out from the navbar.
 
 ---
 
