@@ -210,8 +210,22 @@ const UploadPastRecords = () => {
 
           {/* Dev mode notice */}
           {IPFS_DEV_MODE && (
-            <div className="mb-6 px-4 py-3 rounded-xl bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 text-sm">
-              IPFS dev mode active — files are stored locally in your browser. Set <span className="font-mono text-xs bg-white/5 px-1 rounded">REACT_APP_WEB3_STORAGE_TOKEN</span> in <span className="font-mono text-xs bg-white/5 px-1 rounded">.env</span> to enable real IPFS uploads.
+            <div className="mb-6 px-4 py-3 rounded-xl bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 text-sm flex items-start justify-between gap-4">
+              <span>
+                IPFS dev mode — files stored in browser localStorage (max ~3 MB per file, ~5 MB total).
+                Set <span className="font-mono text-xs bg-white/5 px-1 rounded">REACT_APP_WEB3_STORAGE_TOKEN</span> in <span className="font-mono text-xs bg-white/5 px-1 rounded">.env</span> for real IPFS.
+              </span>
+              <button
+                onClick={() => {
+                  const keys = Object.keys(localStorage).filter(k => k.startsWith('ipfs_'));
+                  keys.forEach(k => localStorage.removeItem(k));
+                  window.location.reload();
+                }}
+                className="shrink-0 text-xs px-2 py-1 rounded bg-yellow-500/20 hover:bg-yellow-500/30 border border-yellow-500/30 transition-colors"
+                title="Remove all cached IPFS files from localStorage"
+              >
+                Clear cache
+              </button>
             </div>
           )}
 

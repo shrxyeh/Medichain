@@ -48,8 +48,50 @@ export const uploadToIPFS = async (file, onProgress = null) => {
   };
 };
 
+// Evict oldest ipfs_* localStorage entries until setItem succeeds or nothing left to remove
+const localStorageSetWithEviction = (key, value) => {
+  for (let attempt = 0; attempt < 20; attempt++) {
+    try {
+      localStorage.setItem(key, value);
+      return;
+    } catch (e) {
+      if (e.name !== 'QuotaExceededError' && e.code !== 22) throw e;
+      const ipfsKeys = Object.keys(localStorage).filter(k => k.startsWith('ipfs_'));
+      if (ipfsKeys.length === 0) {
+        throw new Error(
+          `File is too large for browser storage in dev mode (localStorage is full). ` +
+          `Try a smaller file (under 2 MB), or clear your browser's localStorage for this site.`
+        );
+      }
+      // Remove the oldest entry (lowest storedAt, falling back to first found)
+      let oldestKey = ipfsKeys[0];
+      let oldestTime = Infinity;
+      for (const k of ipfsKeys) {
+        try {
+          const parsed = JSON.parse(localStorage.getItem(k));
+          if (parsed.storedAt && parsed.storedAt < oldestTime) {
+            oldestTime = parsed.storedAt;
+            oldestKey = k;
+          }
+        } catch (_) {}
+      }
+      localStorage.removeItem(oldestKey);
+    }
+  }
+  throw new Error('localStorage quota exceeded — could not free enough space after eviction.');
+};
+
 // Dev mode: store as base64 so it survives page reloads (blob URLs are session-only)
 const createFallbackUpload = async (file) => {
+  // base64 inflates by ~33%; cap at 3 MB source to stay safely under the 5 MB quota
+  if (file.size > 3 * 1024 * 1024) {
+    throw new Error(
+      `File is too large for dev-mode storage (${(file.size / 1024 / 1024).toFixed(1)} MB). ` +
+      `Dev mode stores files in localStorage which has a ~5 MB limit. Use a file under 3 MB, ` +
+      `or set REACT_APP_WEB3_STORAGE_TOKEN in .env to enable real IPFS uploads.`
+    );
+  }
+
   const ts = Date.now().toString(36);
   const rand = Math.random().toString(36).substring(2, 18);
   const nameSlug = file.name.replace(/[^a-z0-9]/gi, '').substring(0, 10).toLowerCase();
@@ -62,11 +104,12 @@ const createFallbackUpload = async (file) => {
     reader.readAsDataURL(file);
   });
 
-  localStorage.setItem(`ipfs_${fakeCid}`, JSON.stringify({
+  localStorageSetWithEviction(`ipfs_${fakeCid}`, JSON.stringify({
     dataUrl,
     filename: file.name,
     mimeType: file.type,
     size: file.size,
+    storedAt: Date.now(),
   }));
 
   return { cid: fakeCid, filename: file.name, mimeType: file.type, size: file.size, uploadedAt: new Date().toISOString(), gateway: dataUrl, isDevelopment: true };
