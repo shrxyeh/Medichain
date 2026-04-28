@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Web3 from "web3";
 import { useParams, useNavigate } from "react-router-dom";
-import NavBar_Logout from "./NavBar_Logout";
+import NavBarLogout from "./NavBar_Logout";
 import DiagnosticRegistration from "../build/contracts/DiagnosticRegistration.json";
 
 const DiagnosticDashBoard = () => {
@@ -62,7 +62,7 @@ const DiagnosticDashBoard = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-dark-950 via-dark-900 to-dark-800">
-      <NavBar_Logout />
+      <NavBarLogout />
 
       <div className="pt-20 pb-12 px-4 sm:px-6 lg:px-8 min-h-screen flex flex-col justify-center items-center">
         {/* Welcome Section */}

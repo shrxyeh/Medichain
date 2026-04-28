@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import Web3 from "web3";
 import { useParams, useNavigate } from "react-router-dom";
-import NavBar_Logout from "./NavBar_Logout";
+import NavBarLogout from "./NavBar_Logout";
 import DoctorRegistration from "../build/contracts/DoctorRegistration.json";
 import { useSecurityContext } from "../context/SecurityContext";
 import AccessControlPanel from "./AccessControlPanel";
@@ -10,7 +10,7 @@ import ZKVerificationModal from "./ZKVerificationModal";
 const DoctorDashBoard = () => {
   const { hhNumber } = useParams();
   const navigate = useNavigate();
-  const { authenticateUser, currentUser } = useSecurityContext();
+  const { authenticateUser } = useSecurityContext();
 
   const [doctorDetails, setDoctorDetails] = useState(null);
   const [loadError, setLoadError] = useState(null);
@@ -65,7 +65,7 @@ const DoctorDashBoard = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-dark-950 via-dark-900 to-dark-800">
-      <NavBar_Logout />
+      <NavBarLogout />
 
       <div className="pt-20 pb-12 px-4 sm:px-6 lg:px-8 min-h-screen flex flex-col justify-center items-center">
         {/* Security Status Bar */}

@@ -7,10 +7,7 @@ import ConnectWallet from "./ConnectWallet";
 import { hashPassword } from "../utils/hashPassword";
 
 const PatientRegistry = () => {
-  const [web3, setWeb3] = useState(null);
-  const [contract, setContract] = useState(null);
   const [name, setName] = useState("");
-  const [isRegistered, setIsRegistered] = useState(false);
   const [dateOfBirth, setDateOfBirth] = useState("");
   const [homeAddress, setHomeAddress] = useState("");
   const [hhNumber, sethhNumber] = useState("");
@@ -39,7 +36,6 @@ const PatientRegistry = () => {
     if (window.ethereum) {
       const web3Instance = new Web3(window.ethereum);
       try {
-        setWeb3(web3Instance);
 
         // Get network ID and convert BigInt to string for object key lookup
         const networkId = await web3Instance.eth.net.getId();
@@ -58,12 +54,7 @@ const PatientRegistry = () => {
           return;
         }
 
-        const contractInstance = new web3Instance.eth.Contract(
-          PatientRegistration.abi,
-          deployedNetwork.address
-        );
-
-        setContract(contractInstance);
+        // Contract is deployed — handleRegister creates a fresh instance on submit
       } catch (error) {
         setFormError("Failed to initialize contract: " + error.message);
       }

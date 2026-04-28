@@ -24,6 +24,7 @@ const ConnectWallet = ({ onConnect, compact = false }) => {
         window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
       }
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleAccountsChanged = (accounts) => {

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Web3 from "web3";
 import { useParams, useNavigate } from "react-router-dom";
-import NavBar_Logout from "./NavBar_Logout";
+import NavBarLogout from "./NavBar_Logout";
 import MedicalRecords from "../build/contracts/MedicalRecords.json";
 import { uploadToIPFS, checkIPFSConnection, IPFS_DEV_MODE } from "../utils/ipfsClient";
 
@@ -10,7 +10,6 @@ const UploadPastRecords = () => {
   const navigate = useNavigate();
 
   // State
-  const [web3, setWeb3] = useState(null);
   const [contract, setContract] = useState(null);
   const [accounts, setAccounts] = useState([]);
   const [file, setFile] = useState(null);
@@ -52,7 +51,6 @@ const UploadPastRecords = () => {
       if (window.ethereum) {
         try {
           const web3Instance = new Web3(window.ethereum);
-          setWeb3(web3Instance);
 
           const fetchedAccounts = await web3Instance.eth.getAccounts();
           setAccounts(fetchedAccounts);
@@ -194,7 +192,7 @@ const UploadPastRecords = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-dark-950 via-dark-900 to-dark-800">
-      <NavBar_Logout />
+      <NavBarLogout />
 
       <div className="pt-24 pb-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-2xl mx-auto">

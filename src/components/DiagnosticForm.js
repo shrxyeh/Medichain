@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import Web3 from "web3";
 import { useParams, useNavigate } from "react-router-dom";
-import NavBar_Logout from "./NavBar_Logout";
+import NavBarLogout from "./NavBar_Logout";
 import MedicalRecords from "../build/contracts/MedicalRecords.json";
 import PatientRegistration from "../build/contracts/PatientRegistration.json";
-import { uploadToIPFS, checkIPFSConnection } from "../utils/ipfsClient";
+import { uploadToIPFS } from "../utils/ipfsClient";
 
 // Simple unique ID generator (avoids uuid dependency)
 const generateUniqueId = () => {
@@ -16,10 +16,8 @@ const DiagnosticForm = () => {
   const navigate = useNavigate();
 
   // Web3 State
-  const [web3, setWeb3] = useState(null);
   const [medicalRecordsContract, setMedicalRecordsContract] = useState(null);
   const [patientContract, setPatientContract] = useState(null);
-  const [accounts, setAccounts] = useState([]);
 
   // Form State
   const [recordId, setRecordId] = useState("");
@@ -40,7 +38,6 @@ const DiagnosticForm = () => {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
-  const [ipfsConnected, setIpfsConnected] = useState(false);
   const [patientVerified, setPatientVerified] = useState(false);
   const [contractsReady, setContractsReady] = useState(false);
 
@@ -52,16 +49,11 @@ const DiagnosticForm = () => {
       // Generate unique record ID
       setRecordId(`EHR${generateUniqueId()}`);
 
-      const connected = await checkIPFSConnection();
-      setIpfsConnected(connected);
-
       if (window.ethereum) {
         try {
           const web3Instance = new Web3(window.ethereum);
-          setWeb3(web3Instance);
 
           const fetchedAccounts = await web3Instance.eth.getAccounts();
-          setAccounts(fetchedAccounts);
           if (fetchedAccounts.length > 0) {
             setDiagnosticWallet(fetchedAccounts[0]);
           }
@@ -291,7 +283,7 @@ const DiagnosticForm = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-dark-950 via-dark-900 to-dark-800">
-      <NavBar_Logout />
+      <NavBarLogout />
 
       <div className="pt-24 pb-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto">

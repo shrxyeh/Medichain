@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import Web3 from "web3";
 import { useParams, useNavigate } from "react-router-dom";
-import NavBar_Logout from "./NavBar_Logout";
+import NavBarLogout from "./NavBar_Logout";
 import MedicalRecords from "../build/contracts/MedicalRecords.json";
 import PatientRegistration from "../build/contracts/PatientRegistration.json";
 import DoctorRegistration from "../build/contracts/DoctorRegistration.json";
@@ -25,9 +25,6 @@ const DoctorViewPatientRecords = () => {
   const [error, setError] = useState(null);
   const [hasPermission, setHasPermission] = useState(false);
   const [refreshCount, setRefreshCount] = useState(0);
-  const [web3, setWeb3] = useState(null);
-  const [patientContract, setPatientContract] = useState(null);
-  const [medicalContract, setMedicalContract] = useState(null);
 
   // Consultation notes
   const notesKey = `doctorNotes_${hhNumber}_${patientHhNumber}`;
@@ -45,8 +42,6 @@ const DoctorViewPatientRecords = () => {
       if (window.ethereum) {
         try {
           const web3Instance = new Web3(window.ethereum);
-          setWeb3(web3Instance);
-
           const networkId = await web3Instance.eth.net.getId();
           const networkIdStr = networkId.toString();
 
@@ -64,8 +59,6 @@ const DoctorViewPatientRecords = () => {
             PatientRegistration.abi,
             patientDeployedNetwork.address
           );
-          setPatientContract(patientContractInstance);
-
           // Check permission via DoctorRegistration contract
           const doctorDeployedNetwork = DoctorRegistration.networks[networkIdStr] ||
             DoctorRegistration.networks["31337"];
@@ -101,8 +94,6 @@ const DoctorViewPatientRecords = () => {
               MedicalRecords.abi,
               medicalDeployedNetwork.address
             );
-            setMedicalContract(medicalContractInstance);
-
             // Fetch records
             await fetchRecords(medicalContractInstance);
           } else {
@@ -119,6 +110,7 @@ const DoctorViewPatientRecords = () => {
     };
 
     init();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hhNumber, patientHhNumber, refreshCount]);
 
   const fetchRecords = async (contractInstance) => {
@@ -206,7 +198,7 @@ const DoctorViewPatientRecords = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-dark-950 via-dark-900 to-dark-800">
-      <NavBar_Logout />
+      <NavBarLogout />
 
       <div className="pt-24 pb-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto">

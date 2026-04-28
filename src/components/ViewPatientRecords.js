@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import Web3 from "web3";
 import { useParams, useNavigate } from "react-router-dom";
-import NavBar_Logout from "./NavBar_Logout";
+import NavBarLogout from "./NavBar_Logout";
 import MedicalRecords from "../build/contracts/MedicalRecords.json";
 import { getIPFSUrl } from "../utils/ipfsClient";
 
@@ -9,8 +9,6 @@ const ViewPatientRecords = () => {
   const { hhNumber } = useParams();
   const navigate = useNavigate();
 
-  const [web3, setWeb3] = useState(null);
-  const [contract, setContract] = useState(null);
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -21,8 +19,6 @@ const ViewPatientRecords = () => {
       if (window.ethereum) {
         try {
           const web3Instance = new Web3(window.ethereum);
-          setWeb3(web3Instance);
-
           const networkId = await web3Instance.eth.net.getId();
           const networkIdStr = networkId.toString();
           const deployedNetwork = MedicalRecords.networks[networkIdStr] ||
@@ -33,8 +29,6 @@ const ViewPatientRecords = () => {
               MedicalRecords.abi,
               deployedNetwork.address
             );
-            setContract(contractInstance);
-
             // Fetch records
             await fetchRecords(contractInstance);
           } else {
@@ -51,6 +45,7 @@ const ViewPatientRecords = () => {
     };
 
     init();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hhNumber, refreshCount]);
 
   const fetchRecords = async (contractInstance) => {
@@ -160,7 +155,7 @@ const ViewPatientRecords = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-dark-950 via-dark-900 to-dark-800">
-      <NavBar_Logout />
+      <NavBarLogout />
 
       <div className="pt-24 pb-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto">

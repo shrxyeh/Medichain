@@ -1,14 +1,14 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useSecurityContext } from '../context/SecurityContext';
 
 const ZKVerificationModal = ({ onClose, onVerify }) => {
-  const { currentUser, userProofs, zkProofs, createSelectiveProof } = useSecurityContext();
+  const { userProofs, zkProofs, createSelectiveProof } = useSecurityContext();
 
   const [verificationStatus, setVerificationStatus] = useState('idle'); // idle, verifying, success, failed
   const [selectedAttributes, setSelectedAttributes] = useState([]);
   const [proofResult, setProofResult] = useState(null);
-  const [activeDemo, setActiveDemo] = useState(null);
+  const [, setActiveDemo] = useState(null);
 
   const availableAttributes = [
     { key: 'name', label: 'Full Name', icon: '👤' },

@@ -209,7 +209,7 @@ export const getUploadStatus = async (cid) => {
 
 export { IPFS_GATEWAYS };
 
-export default {
+const ipfsClient = {
   initWeb3Storage,
   getWeb3StorageClient,
   uploadToIPFS,
@@ -222,3 +222,5 @@ export default {
   getUploadStatus,
   IPFS_GATEWAYS,
 };
+
+export default ipfsClient;

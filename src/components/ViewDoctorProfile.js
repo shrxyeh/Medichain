@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import DoctorRegistration from "../build/contracts/DoctorRegistration.json";
 import Web3 from "web3";
 import { useNavigate, useParams } from "react-router-dom";
-import NavBar_Logout from "./NavBar_Logout";
+import NavBarLogout from "./NavBar_Logout";
 
 const Field = ({ label, value }) => (
   <div className="py-4 border-b border-white/5 last:border-0 flex flex-col sm:flex-row sm:items-center gap-1">
@@ -40,7 +40,7 @@ const ViewDoctorProfile = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-dark-950 via-dark-900 to-dark-800">
-      <NavBar_Logout />
+      <NavBarLogout />
 
       <div className="pt-24 pb-12 px-4 sm:px-6 lg:px-8 flex flex-col items-center">
         <div className="w-full max-w-xl animate-fade-in">
